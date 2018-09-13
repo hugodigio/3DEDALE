@@ -1,4 +1,6 @@
-/*
-Il s'agit de l'executable du programme, aucun algorithme n'est présent dans ce fichier
-hormis le code nécéssaire à l'éxécution du programme.
-*/
+#include <iostream>
+
+int main() {
+    std::cout << "Hello, World!" << std::endl;
+    return 0;
+}
