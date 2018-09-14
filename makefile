@@ -4,16 +4,20 @@ ifeq ($(UNAME_S),Linux)
 	GLFW_LIBS = -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor
 	INC = -I/usr/local/include/opencv2/
 	OSX_LIBS=
+	FLAGS = -lGL -lGLU -lglut
 endif
 
-all : Projet
- 
-test: test.cpp
-	$(CXX) -c test.cpp $(INC)
- 
-Projet: test
-	$(CXX) -o Projet test.o $(OSX_LIBS) $(OPENCV_LIBS) $(GLFW_LIBS)
-	rm *.o
-	
-clean :
-	rm -rf Projet
+ifeq ($(UNAME_S),Darwin)
+	FLAGS = -framework OpenGL -framework glut
+endif
+
+all: main
+
+main: main.o 
+	$(CXX) -o $@ main.o $(FLAGS) 
+
+main.o: main.cpp 
+	$(CXX) -c main.cpp $(FLAGS) 
+
+clean:
+	rm *.o main
