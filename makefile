@@ -1,19 +1,17 @@
-UNAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),Linux)
-	OPENCV_LIBS = -L/usr/local/lib -pthread -lopencv_imgcodecs -lopencv_imgproc -lopencv_core -lopencv_highgui
-	GLFW_LIBS = -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor
-	INC = -I/usr/local/include/opencv2/
-	OSX_LIBS=
-endif
+OPENCV_LIBS = -L./lib/ -lIlmImf -llibtiff -lopencv_imgcodecs -lippicv -llibwebp -lopencv_imgproc -llibjasper -lopencv_core -lzlib -llibjpeg -lopencv_hal -llibpng -lopencv_highgui
+OSX_LIBS = -framework OpenCL -framework Cocoa
+INC = -I./include/
 
-all : Projet
- 
-test: test.cpp
+all : analyseur
+
+test : test.cpp test.h
 	$(CXX) -c test.cpp $(INC)
- 
-Projet: test
-	$(CXX) -o Projet test.o $(OSX_LIBS) $(OPENCV_LIBS) $(GLFW_LIBS)
-	rm *.o
-	
+
+analyse_dedale : analyse_dedale.cpp
+	$(CXX) -std=c++11 -o analyse_dedale.o -c analyse_dedale.cpp $(INC)
+
+analyseur : analyse_dedale
+	$(CXX) -std=c++11 -o analyseur analyse_dedale.o $(OSX_LIBS) $(OPENCV_LIBS)
+
 clean :
-	rm -rf Projet
+	rm *.o analyseur
