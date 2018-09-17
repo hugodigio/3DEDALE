@@ -3,6 +3,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp> //line
 #include <opencv2/opencv.hpp>
+#include <opencv2/videoio.hpp>
 
 #include <iostream>
 #include <vector>
@@ -10,92 +11,21 @@
 using namespace cv;
 using namespace std;
 
+/// Global Variables
+Mat img; Mat templ; Mat result;
+
+int match_method;
+int max_Trackbar = 5;
+
+
 cv::Mat image;
 cv::Mat model;
 Mat image_lines, image_fill;
-int     treshold_value = 0;
 
-///Fonction permettant la détection des lignes
-vector<vector<Point2i>> linesDetection(Mat img, vector<Point2i> coordCorner){
-    /// détection des contours avec Canny
-    Mat imgCanny;
-    
-    cvtColor(img, imgCanny, COLOR_RGB2GRAY);
-    blur( imgCanny, imgCanny, Size(3,3) );
-    Canny(imgCanny, imgCanny, 50, 200, 3);
-    
-    /// detection des lignes dans le vect lines
-    /// vecteur dans lequel sont stockées les lignes
-    ///     lignes stockées sous la forme (x1,y1,x2,y2)
-    vector<Vec4i> lines;
-    /// houghLinesP(imgsource,
-    /// vectdest,
-    /// distance resolution en pixels
-    /// angle resolution en rad
-    /// seuil :The minimum number of intersections to “detect” a line
-    /// longueur min d'une ligne détectée
-    /// max ecart entre pixels de la ligne)
-    
-    HoughLinesP(imgCanny, lines, 1, CV_PI/180, 30, 15, 10);
-    
-    /*
-    for( size_t i = 0; i < lines.size(); i++ )
-    {
-        Vec4i l = lines[i];
-        line( imgCanny, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(255,0,0), 3, LINE_AA);
-    }
-    
-    namedWindow("canny1", WINDOW_AUTOSIZE);
-    imshow("canny1", imgCanny);
-    */
-    /// tableau de couples de points
-    vector<vector<Point2i>> vectLines;
-    
-    ///Initialisation du mask
-    Mat mask = Mat::zeros(img.size(), CV_8UC1);
-    
-    ///Si on a 4 points alors
-    ///On déssine un polygone avec ces 4 points dans le mask
-    if(coordCorner.size() == 4) {
-        ///Conversion des données pour utiliser la fonction fillPoly
-        Point coord[1][4];
-        coord[0][0] = coordCorner[0];
-        coord[0][1] = coordCorner[1];
-        coord[0][2] = coordCorner[2];
-        coord[0][3] = coordCorner[3];
-        ///Nombre de points
-        int npt[] = {4};
-        ///Pointeur de points
-        const Point *ppt[1] = {coord[0]};
-        
-        fillPoly(mask, ppt, npt, 1, Scalar(255, 255, 255), 8);
-    }
-    
-    for(Vec4i l : lines){
-        
-        /// couple de points
-        vector<Point2i> vectPoints ;
-        vectPoints.emplace_back(l[0], l[1]);
-        vectPoints.emplace_back(l[2], l[3]);
+int treshold_value = 0;
+int cpt_frame = 0;
 
-        ///tracé de la ligne
-        if((int)mask.at<uchar>(vectPoints[0].y, vectPoints[0].x) == 255 && (int)mask.at<uchar>(vectPoints[1].y, vectPoints[1].x) == 255) {
-            /// ajout du couple au tableau
-            vectLines.push_back(vectPoints) ;
-            line( imgCanny, vectPoints[0], vectPoints[1], Scalar(255,0,0), 3, LINE_AA);
-        }
-    }
-
-    namedWindow("canny",WINDOW_AUTOSIZE);
-    imshow("canny", imgCanny);
-    
-    
-    //return(filterDouble(vectLines,10));
-    return(vectLines);
-}
-
-vector<Point> contoursConvexHull( Mat image, int tresh)
-{
+vector<Point> contoursConvexHull( Mat image, int tresh) {
     Mat image_convex;
     vector<vector<Point> > vec_contours;
 
@@ -113,7 +43,8 @@ vector<Point> contoursConvexHull( Mat image, int tresh)
     for ( size_t i = 0; i< vec_contours.size(); i++)
         for ( size_t j = 0; j< vec_contours[i].size(); j++)
             pts.push_back(vec_contours[i][j]);
-    convexHull( pts, ConvexHullPoints );
+    if(pts.size() > 0)
+        convexHull( pts, ConvexHullPoints );
     
     return ConvexHullPoints;
 
@@ -129,10 +60,20 @@ vector<Point> contoursConvexHull( Mat image, int tresh)
      */
 }
 
+bool initialisation (Mat frame) {
+    
+    bool initalized = true;
+    while(cpt_frame < 50 && initalized) {
+        vector<Point> ConvexHullPoints = contoursConvexHull(frame, 40);
+        //if()
+            initalized = false;
+        cpt_frame++;
+    }
+    
+    return initalized;
+}
 
-
-void Contour ( int, void* )
-{
+void Contour ( int, void* ) {
     image_lines = image.clone();
     image_fill = image.clone();
     
@@ -142,35 +83,114 @@ void Contour ( int, void* )
     
     fillConvexPoly(image_fill, pts_contours, Scalar(255,0,255));
     
-    
-    cout << treshold_value << endl;
     imshow("Convex", image_lines);
     imshow("fill", image_fill);
 }
 
+/**
+ * @function MatchingMethod
+ * @brief Trackbar callback
+ */
+void MatchingMethod( int, void* )
+{
+    /// Source image to display
+    Mat img_display;
+    img.copyTo( img_display );
+    
+    /// Create the result matrix
+    int result_cols =  img.cols - templ.cols + 1;
+    int result_rows = img.rows - templ.rows + 1;
+    
+    result.create( result_rows, result_cols, CV_32FC1 );
+    
+    /// Do the Matching and Normalize
+    matchTemplate( img, templ, result, match_method );
+    normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
+    
+    /// Localizing the best match with minMaxLoc
+    double minVal; double maxVal; Point minLoc; Point maxLoc;
+    Point matchLoc;
+    
+    minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
+    
+    /// For SQDIFF and SQDIFF_NORMED, the best matches are lower values. For all the other methods, the higher the better
+    if( match_method  == CV_TM_SQDIFF || match_method == CV_TM_SQDIFF_NORMED )
+    { matchLoc = minLoc; }
+    else
+    { matchLoc = maxLoc; }
+    
+    /// Show me what you got
+    rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+    rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
+    
+    imshow( "image_window", img_display );
+    imshow( "result_window", result );
+    resizeWindow("image_window", 900, 600);
+    resizeWindow("result_window", 900, 600);
+    
+    return;
+}
+
+/** @function main */
+void matching(Mat image, Mat templt)
+{
+    /// Load image and template
+    img = image;
+    templ = templt;
+    
+    /// Create windows
+    namedWindow( "image_window", 0 );
+    namedWindow( "result_window", 0 );
+    
+    /// Create Trackbar
+
+    createTrackbar( "Method: \n 0: SQDIFF \n 1: SQDIFF NORMED \n 2: TM CCORR \n 3: TM CCORR NORMED \n 4: TM COEFF \n 5: TM COEFF NORMED",
+                   "image_window", &match_method, max_Trackbar, MatchingMethod );
+    
+    MatchingMethod( 0, 0 );
+}
+
+
 int main( int argc, char **argv ) {
     
-    if ( argc != 2 ) {
+    if ( argc < 2 ) {
         printf( "Usage: analyseur ImageToLoadAndDisplay\n" );
         return -1;
     }
     
-    image       = cv::imread( argv[1]);
-    model       = cv::Mat(image.rows, image.cols, CV_8UC3, cv::Scalar(255,0,0));
+    image       = imread( argv[1]);
+    model       = Mat(image.rows, image.cols, CV_8UC3, cv::Scalar(255,0,0));
     
     if ( !image.data ) { /* Check for invalid input */
         printf("Could not open or find the image\n") ;
         return -1;
     }
     
+    
+    
+    // Methode de matching pour trouver un motif dans une image
+    
+    // utilisation : Decommenter et :
+    //  ./analyseur lab4.jpg motig.jpg
+    //  ./analyseur motifs.jpg motif.jpg
+    
+    matching(imread(argv[1]), imread(argv[2]));
+    
+    
+    
+    
+    // Trouver les contours externes du labyrinthe et les affichers
+    
+    // utilisation : Decommenter et :
+    //  ./analyseur lab3.jpg
+    //  ./analyseur ...
+    
+    /*
     image_lines = image.clone();
     image_fill = image.clone();
     treshold_value = 40;
     
-    
     Contour( 0,0);
-
-    //linesDetection(image, coordCorner);
 
     namedWindow("Image", 0);
     imshow( "Image", image );
@@ -188,8 +208,8 @@ int main( int argc, char **argv ) {
     
     createTrackbar( "Seuil : ", "Convex", &treshold_value, 255, Contour );
     createTrackbar( "Seuil : ", "fill", &treshold_value, 255, Contour );
-    
-    cv::waitKey(0);  /* Wait for a keystroke in the window */
+    */
+    cv::waitKey(0);  // Wait for a keystroke in the window
     return 0;
 }
 
