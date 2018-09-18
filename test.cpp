@@ -18,7 +18,12 @@ GLFWwindow* window;
 
 int treshold_value = 40;
 
-int cpt = 0;
+int nombre_de_trackers = 4;
+
+Point minmin;
+Point minmax;
+Point maxmin;
+Point maxmax;
 
 void initCamera() {
 	capture = cvCaptureFromCAM( 0 );
@@ -74,9 +79,17 @@ vector<Point> contoursConvexHull( Mat image, int tresh)
             pts.push_back(vec_contours[i][j]);
     convexHull( pts, ConvexHullPoints );
     
+    cout << ConvexHullPoints << endl;
+    
     return ConvexHullPoints;
 }
 
+void getMinMax (vector<Point> ConvexHullPoints) {
+	//minmin::x = 2;
+	
+	
+	
+}
 
 Mat contour ( Mat image )
 {
@@ -92,23 +105,10 @@ Mat contour ( Mat image )
     return image_fill;
 }
 
+
 int tracking() {
-    // Create a tracker
-    string trackerType = "KCF";
- 
-    Ptr<Tracker> tracker;
- 
-    #if (CV_MINOR_VERSION < 3)
-    {
-        tracker = Tracker::create(trackerType);
-    }
-    #else
-    {
-        tracker = TrackerKCF::create();
-    }
-    #endif
     // Read video
-    VideoCapture video("video.mov");
+    VideoCapture video("images/video.mov");
      
     // Exit if video is not opened
     if(!video.isOpened())
@@ -123,93 +123,81 @@ int tracking() {
  
     // Define initial bounding box 
     // x y width height
-    Rect2d bbox(170, 50, 75, 75); 
+    
+    Rect bboxes[nombre_de_trackers];
+    Rect bbox1(170, 50, 75, 75);
+    Rect bbox2(875, 65, 75, 75); 
+    Rect bbox3(140, 600, 75, 75);
+    Rect bbox4(900, 600, 75, 75); 
+    
+    bboxes[0] = bbox1;
+    bboxes[1] = bbox2; 
+    bboxes[2] = bbox3;
+    bboxes[3] = bbox4; 
+    
+    // Create a tracker
+    string trackerType = "KCF";
  
-    // Uncomment the line below to select a different bounding box 
-    // bbox = selectROI(frame, false); 
-    // Display bounding box. 
-    rectangle(frame, bbox, Scalar( 255, 0, 0 ), 2, 1 ); 
+    Ptr<MultiTracker> multiTracker = MultiTracker::create();
+    for (int i = 0; i < nombre_de_trackers; i++)
+		  multiTracker->add(TrackerKCF::create(), frame, Rect2d(bboxes[i]));
  
-    imshow("Tracking", frame); 
-    tracker->init(frame, bbox);
      
     while(video.read(frame))
     {     
-        // Start timer
-        double timer = (double)getTickCount();
-         
-        // Update the tracking result
-        bool ok = tracker->update(frame, bbox);
-         
-        // Calculate Frames per second (FPS)
-        float fps = getTickFrequency() / ((double)getTickCount() - timer);
-         
-        if (ok)
-        {
-            // Tracking success : Draw the tracked object
-            rectangle(frame, bbox, Scalar( 255, 0, 0 ), 2, 1 );
-        }
-        else
-        {
-            // Tracking failure detected.
-            putText(frame, "Tracking failure detected", Point(100,80), FONT_HERSHEY_SIMPLEX, 0.75, Scalar(0,0,255),2);
-        }
-         
-        // Display tracker type on frame
-        putText(frame, trackerType + " Tracker", Point(100,20), FONT_HERSHEY_SIMPLEX, 0.75, Scalar(50,170,50),2);
-         
-        // Display FPS on frame
-        putText(frame, "FPS : " + SSTR(int(fps)), Point(100,50), FONT_HERSHEY_SIMPLEX, 0.75, Scalar(50,170,50), 2);
- 
-        // Display frame.
-        imshow("Tracking", frame);
-         
-        // Exit if ESC pressed.
-        int k = waitKey(1);
-        if(k == 27)
-        {
-            break;
-        }
- 
-    }
+        //Update the tracking result with new frame
+	  multiTracker->update(frame);
+	 
+	  // Draw tracked objects
+	  for(unsigned i=0; i<multiTracker->getObjects().size(); i++)
+	  {
+		rectangle(frame, multiTracker->getObjects()[i], 2, 1);
+	  }
+	 
+	  // Show frame
+	  imshow("MultiTracker", frame);
+	   
+	  // quit on x button
+	  if  (waitKey(1) == 27) break;
+	 
+		}
 	
 }
 
 int main( int argc, char* argv[] ){
+	int a = 0;
 	
-	initCamera();
+	if (argc <= 1)
+		a = 1;
+	else
+		a = 2;
+		
 	//initGLFW();
-	//closeCamera();
-	/*
-	do{
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		// Swap buffers
-		glfwSwapBuffers(window);
-		glfwPollEvents();
 
-	} // Vérifie si on a appuyé sur la touche échap (ESC) ou si la fenêtre a été fermée
-	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-	glfwWindowShouldClose(window) == 0 );
-	*/
 	
-	tracking();
+	/* PARTIE TRACKING*/
+	if (a == 1) {
+		tracking();
+	}
 	
-    //CvCapture* capture = cvCaptureFromCAM( 0 );
-    cvNamedWindow( "Camera", CV_WINDOW_AUTOSIZE );
-    //IplImage* frame;
-    /*
-    while(1){
-         Mat img = getImage();
+	/* PARTIE RECONNAISSANCE */
+	if (a == 2) {
+		initCamera();
+		cvNamedWindow( "Camera", CV_WINDOW_AUTOSIZE );
+		IplImage* frame;
+		
+		while(1){
+			 Mat img = getImage();
 
-         flip(img, img, 1);
-         img = contour(img);
-         imshow( "Camera", img );
-         char c = cvWaitKey(33);
-        if( c == 27 ) break;
+			 flip(img, img, 1);
+			 img = contour(img);
+			 imshow( "Camera", img );
+			 char c = cvWaitKey(33);
+			if( c == 27 ) break;
+		}
+		closeCamera();
+		
+		cvDestroyWindow( "Camera" );
     }
-    //cvWaitKey(0);
-    
-    cvDestroyWindow( "Camera" );
-    */
+    return 0;
 }
