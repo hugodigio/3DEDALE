@@ -166,9 +166,9 @@ void findPoly(Mat image) {
             }
         }
     }
-    namedWindow("a", 0);
-    imshow("a", image);
-    resizeWindow("a", 900, 600);
+    namedWindow("Triangle", 0);
+    imshow("Triangle", image);
+    resizeWindow("Triangle", 900, 600);
 }
 
 //Si a est compris dans l'interface [b +- inter]
