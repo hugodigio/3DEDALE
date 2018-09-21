@@ -1,0 +1,13 @@
+A FAIRE POUR NE PLUS DETECTER DEUX LIGNES A LA PLACE D'UNE SEULE
+
+____                __________
+  __________          _______
+    
+
+Tester la colinéarité des vecteurs : x'y -xy' = 0 (a plus ou moins 15 pixels)
+
+Si deux vecteurs sont colinéaires, on teste si les origines des vecteurs sont proches selon x et selon y
+
+Si c'est le cas (selon x par exemple), on créé un vecteur de coordonnées : (ymin, xmoyen) , (ymax, xmoyen)
+
+
