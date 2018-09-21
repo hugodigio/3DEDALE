@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <vector>
+#include <limits>
+#include <queue>
 
 using namespace cv;
 using namespace std;
@@ -20,12 +22,12 @@ int max_Trackbar = 5;
 
 cv::Mat image;
 cv::Mat model;
-Mat image_lines, image_fill;
+Mat image_rect, image_circle;
 
 int treshold_value = 0;
 int cpt_frame = 0;
 
-vector<Point> contoursConvexHull( Mat image, int tresh) {
+Rect contoursConvexHull( Mat image, int tresh) {
     Mat image_convex;
     vector<vector<Point> > vec_contours;
 
@@ -33,7 +35,7 @@ vector<Point> contoursConvexHull( Mat image, int tresh) {
     threshold( image_convex, image_convex, tresh, 255, 0 ); //Seuillage
     blur(image_convex, image_convex, Size(3, 3));
     
-    Canny(image_convex, image_convex, 0, 100, 3, true);
+    Canny(image_convex, image_convex, 50, 150, 3, true);
     
     findContours( image_convex, vec_contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE );
  
@@ -43,10 +45,13 @@ vector<Point> contoursConvexHull( Mat image, int tresh) {
     for ( size_t i = 0; i< vec_contours.size(); i++)
         for ( size_t j = 0; j< vec_contours[i].size(); j++)
             pts.push_back(vec_contours[i][j]);
+    
     if(pts.size() > 0)
         convexHull( pts, ConvexHullPoints );
     
-    return ConvexHullPoints;
+    Rect bounding_rect = boundingRect( ConvexHullPoints );
+    
+    return bounding_rect;
 
     /* // Peut-etre pour contour
     Mat drawing = Mat::zeros(image_convex.size(), CV_8UC3);
@@ -60,97 +65,112 @@ vector<Point> contoursConvexHull( Mat image, int tresh) {
      */
 }
 
-bool initialisation (Mat frame) {
-    
-    bool initalized = true;
-    while(cpt_frame < 50 && initalized) {
-        vector<Point> ConvexHullPoints = contoursConvexHull(frame, 40);
-        //if()
-            initalized = false;
-        cpt_frame++;
-    }
-    
-    return initalized;
-}
 
 void Contour ( int, void* ) {
-    image_lines = image.clone();
-    image_fill = image.clone();
+  
+    /*
+     image_lines = image.clone();
+     image_fill = image.clone();
+     
+     vector<vector<Point> > = ....
+     polylines( image_lines, pts_contours, true, Scalar(0,0,255), 2 );
+     fillConvexPoly(image_fill, pts_contours, Scalar(255,0,255));
+
+     imshow("Convex", image_lines);
+     imshow("fill", image_fill);
+    */
+    image_rect = image.clone();
     
-    vector<Point> pts_contours = contoursConvexHull(image, treshold_value);
+    Rect rect = contoursConvexHull(image_rect, treshold_value);
     
-    polylines( image_lines, pts_contours, true, Scalar(0,0,255), 2 );
+    cout << rect << endl;
     
-    fillConvexPoly(image_fill, pts_contours, Scalar(255,0,255));
+    rectangle(image_rect, rect, Scalar(0,255,0), 3);
     
-    imshow("Convex", image_lines);
-    imshow("fill", image_fill);
+    imshow( "Rectangle", image_rect );
+    
 }
 
-/**
- * @function MatchingMethod
- * @brief Trackbar callback
- */
-void MatchingMethod( int, void* )
-{
-    /// Source image to display
-    Mat img_display;
-    img.copyTo( img_display );
+void findCircle(Mat image) {
     
-    /// Create the result matrix
-    int result_cols =  img.cols - templ.cols + 1;
-    int result_rows = img.rows - templ.rows + 1;
+    Mat img_gray;
+    image_circle = image.clone();
+    cvtColor( image, img_gray, CV_BGR2GRAY );
+    /// Reduce the noise so we avoid false circle detection
+    GaussianBlur( img_gray, img_gray, Size(9, 9), 2, 2 );
+    vector<Vec3f> circles;
     
-    result.create( result_rows, result_cols, CV_32FC1 );
-    
-    /// Do the Matching and Normalize
-    matchTemplate( img, templ, result, match_method );
-    normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
-    
-    /// Localizing the best match with minMaxLoc
-    double minVal; double maxVal; Point minLoc; Point maxLoc;
-    Point matchLoc;
-    
-    minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
-    
-    /// For SQDIFF and SQDIFF_NORMED, the best matches are lower values. For all the other methods, the higher the better
-    if( match_method  == CV_TM_SQDIFF || match_method == CV_TM_SQDIFF_NORMED )
-    { matchLoc = minLoc; }
-    else
-    { matchLoc = maxLoc; }
-    
-    /// Show me what you got
-    rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
-    rectangle( result, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar::all(0), 2, 8, 0 );
-    
-    imshow( "image_window", img_display );
-    imshow( "result_window", result );
-    resizeWindow("image_window", 900, 600);
-    resizeWindow("result_window", 900, 600);
-    
-    return;
-}
+    /// Apply the Hough Transform to find the circles
+    HoughCircles( img_gray, circles, CV_HOUGH_GRADIENT, 1, img_gray.rows/8, 200, 100, 0, 0 );
 
-/** @function main */
-void matching(Mat image, Mat templt)
-{
-    /// Load image and template
-    img = image;
-    templ = templt;
-    
-    /// Create windows
-    namedWindow( "image_window", 0 );
-    namedWindow( "result_window", 0 );
-    
-    /// Create Trackbar
+    /// Draw the circles detected
+    for( size_t i = 0; i < circles.size(); i++ )
+    {
+        Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+        int radius = cvRound(circles[i][2]);
+        // circle center
+        circle( image_circle, center, 3, Scalar(0,255,0), -1, 8, 0 );
+        // circle outline
+        circle( image_circle, center, radius, Scalar(0,0,255), 3, 8, 0 );
+    }
 
-    createTrackbar( "Method: \n 0: SQDIFF \n 1: SQDIFF NORMED \n 2: TM CCORR \n 3: TM CCORR NORMED \n 4: TM COEFF \n 5: TM COEFF NORMED",
-                   "image_window", &match_method, max_Trackbar, MatchingMethod );
-    
-    MatchingMethod( 0, 0 );
+    imshow( "Circle", image_circle );
 }
 
 
+void findPoly(Mat image) {
+    // needed matrix
+    Mat gray;
+    Mat blur;
+    Mat bw;
+    Mat dil;
+    Mat er;
+    
+    vector<vector<Point> > squares;
+    vector<vector<Point> > contours;
+    vector<Point> approx;
+    
+    cvtColor(image, gray, CV_BGR2GRAY);
+    medianBlur(gray, blur, 3);
+    Canny(blur, bw, 0, 50);
+    
+    // dilate to ensure there is no cut off lines
+    dilate(bw, dil, Mat(), Point(-1,-1));
+    
+    // find all contours
+    findContours(dil, contours, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
+    
+    float area = 0;
+    
+    // loop to find the squares
+    for (size_t i = 0; i < contours.size(); i++) {
+        
+        // approximate contour with accuracy proportional
+        // to the contour perimeter
+        approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true)*0.02, true);
+        //fillConvexPoly(image, approx, Scalar(255,0,255));
+
+        if(approx.size()==3 ) { //triangle
+            
+            if(fabs(contourArea(approx) > area)) {
+                area = fabs(contourArea(approx));
+                
+                polylines( image, approx, true, Scalar(0,0,255), 2 );
+                
+                double area1 = contourArea(approx);
+                
+                cout << "area0 =" << endl <<
+                "area1 =" << area1 << endl <<
+                "approx poly vertices" << approx.size() << endl <<
+                "area : " << fabs(contourArea(approx)) << endl;
+            }
+        }
+    }
+    namedWindow("a", 0);
+    imshow("a", image);
+    resizeWindow("a", 900, 600);
+}
+               
 int main( int argc, char **argv ) {
     
     if ( argc < 2 ) {
@@ -159,25 +179,13 @@ int main( int argc, char **argv ) {
     }
     
     image       = imread( argv[1]);
-    model       = Mat(image.rows, image.cols, CV_8UC3, cv::Scalar(255,0,0));
+    image_rect  = Mat(image.rows, image.cols, CV_8UC3, cv::Scalar(255,0,0));
+    image_circle  = Mat(image.rows, image.cols, CV_8UC3, cv::Scalar(255,0,0));
     
     if ( !image.data ) { /* Check for invalid input */
         printf("Could not open or find the image\n") ;
         return -1;
     }
-    
-    
-    
-    // Methode de matching pour trouver un motif dans une image
-    
-    // utilisation : Decommenter et :
-    //  ./analyseur lab4.jpg motig.jpg
-    //  ./analyseur motifs.jpg motif.jpg
-    
-    matching(imread(argv[1]), imread(argv[2]));
-    
-    
-    
     
     // Trouver les contours externes du labyrinthe et les affichers
     
@@ -185,9 +193,9 @@ int main( int argc, char **argv ) {
     //  ./analyseur lab3.jpg
     //  ./analyseur ...
     
-    /*
-    image_lines = image.clone();
-    image_fill = image.clone();
+    findPoly(image);
+    findCircle(image);
+    
     treshold_value = 40;
     
     Contour( 0,0);
@@ -195,20 +203,17 @@ int main( int argc, char **argv ) {
     namedWindow("Image", 0);
     imshow( "Image", image );
     resizeWindow("Image", 900, 600);
-   
-    namedWindow("Convex", 0);
-    imshow("Convex", image_lines);
-    resizeWindow("Convex", 900, 600);
-    moveWindow("Convex", 20,20);
     
-    namedWindow("fill", 0);
-    imshow("fill", image_fill);
-    resizeWindow("fill", 900, 600);
-    moveWindow("fill", 20,20);
+    namedWindow("Rectangle", 0);
+    imshow( "Rectangle", image_rect );
+    resizeWindow("Rectangle", 900, 600);
     
-    createTrackbar( "Seuil : ", "Convex", &treshold_value, 255, Contour );
-    createTrackbar( "Seuil : ", "fill", &treshold_value, 255, Contour );
-    */
+    namedWindow("Circle", 0);
+    imshow( "Circle", image_circle );
+    resizeWindow("Circle", 900, 600);
+    
+    createTrackbar( "Seuil : ", "Rectangle", &treshold_value, 255, Contour );
+
     cv::waitKey(0);  // Wait for a keystroke in the window
     return 0;
 }
