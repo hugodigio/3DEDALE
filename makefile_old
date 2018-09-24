@@ -6,19 +6,9 @@ ifeq ($(UNAME_S),Linux)
 	OSX_LIBS=
 endif
 
-#règle all
-all : main
+all : Projet
  
-main: main.o 2Dto3D.o
-	$(CXX) -o main main.o $(OSX_LIBS) $(OPENCV_LIBS) $(GLFW_LIBS)
-
-main.o: main.cpp ./src/3DAR/2Dto3D.hpp
-	$(CXX) -o main.o -c main.cpp
-
-2Dto3D.o: ./src/3DAR/2Dto3D.cpp ./src/3DAR/2Dto3D.hpp
-	$(CXX) -o 2Dto3D.o -c ./src/3DAR/2Dto3D.cpp
-
-mainn: main.cpp
+main: main.cpp
 	$(CXX) -c main.cpp $(INC)
  
 Projet: main

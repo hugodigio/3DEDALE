@@ -1,6 +1,6 @@
 #include <iostream>
 #include <GLFW/glfw3.h>
-#include "src/3DAR/2Dto3D.hpp"
+#include "./src/3DAR/2Dto3D.hpp"
 
 /*
 A FAIRE:
@@ -16,6 +16,8 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
 int main(int argc, char const *argv[])
 {
     GLFWwindow* window;
+
+    test();
 
     glfwInit();
     //creer une funetre
