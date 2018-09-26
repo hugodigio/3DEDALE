@@ -4,18 +4,39 @@
 
 using namespace std;
 
+labyrinthe lab;
+
 void creerlabyrinthe(labyrinthe x){
     cout << "nombre de murs: " << x.x.size() << endl;
+    for(int i=0; i<x.x.size();i++){
+        cout << "construction du mur " << i+1 << endl;
+        def_mur(x.x[i],x.y[i],EPAISSEUR_MUR,HAUTEUR_MUR);
+    }
 }
 
 void test(){
     cout << "test OK" << endl;
 }
 
+void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
+    //code pour faire un mur
+}
 
 /* ----------------------------------------------------------
 // PLUS TARD DANS LE MAIN  QUAND ON AURA REUSSI A LINK SA MER
 ------------------------------------------------------------*/
+
+void def_carre(void){
+
+    glBegin(GL_POLYGON);
+        glNormal3f(0., 0., 1.) ;
+        glVertex3f(-0.5,0.5,0.);
+        glVertex3f(0.5,0.5,0.);
+        glVertex3f(0.5,-0.5,0.);
+        glVertex3f(-0.5 ,-0.5,0.);
+    glEnd();
+
+}
 
 void def_axes(){
 
@@ -40,6 +61,7 @@ void affichage(GLFWwindow* window){
      /*Boucle jusqu'a fermuture de la fenetre*/
     while (!glfwWindowShouldClose(window))
     {
+        
         // Scale to window size
         GLint windowWidth, windowHeight;
         glfwGetWindowSize(window, &windowWidth, &windowHeight);
@@ -51,12 +73,15 @@ void affichage(GLFWwindow* window){
 
         glMatrixMode(GL_PROJECTION_MATRIX);
         glLoadIdentity();
-        gluPerspective( 60, (double)windowWidth / (double)windowHeight, 0.1, 100 );
+        gluPerspective( 75, (double)windowWidth / (double)windowHeight, 0.1, 100 );
+        //        eyeX,eyeY,eyeZ,centerX,centerY,centerZ,upX,upY,upZ
+        gluLookAt(-2, 2, 2, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
         glMatrixMode(GL_MODELVIEW_MATRIX);
-        glTranslatef(0,0,-5);
+        glTranslatef(0,0,0);
 
         def_axes();
+        creerlabyrinthe(lab);
 
         // Update Screen
         glfwSwapBuffers(window);
@@ -69,7 +94,7 @@ void affichage(GLFWwindow* window){
 }
 
 int main(int argc, char const *argv[]) {
-    labyrinthe lab;
+    
 
     test();
 
@@ -117,7 +142,7 @@ int main(int argc, char const *argv[]) {
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-
+    
     affichage(window);
    
     glfwTerminate();
