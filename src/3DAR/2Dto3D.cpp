@@ -1,5 +1,4 @@
 #include <GLFW/glfw3.h>
-#include <GL/glu.h>
 #include "2Dto3D.hpp"
 
 using namespace std;

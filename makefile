@@ -11,7 +11,7 @@ endif
 all : main
  
 main: main.o 
-	$(CXX) -o main main.o $(OSX_LIBS) $(OPENCV_LIBS) $(GLFW_LIBS) $(SOURCES_3D)
+	$(CXX) -o main main.o $(SOURCES_3D) $(OSX_LIBS) $(OPENCV_LIBS) $(GLFW_LIBS)
 	rm -rf *.o
 	./main
 	
