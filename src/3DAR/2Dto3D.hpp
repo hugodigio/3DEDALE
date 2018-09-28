@@ -16,4 +16,5 @@ void test();
 /*cree un mur 3D a partir des coordonnees 2D donnees en parametre*/
 void creermur(cv::Point2f x, cv::Point2f y);
 void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur);
+void def_axes();
 
