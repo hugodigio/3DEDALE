@@ -10,7 +10,7 @@
 
 /** Pensez a faire :
  
- Tourner l'affichage pour une initialisation a plat
+ FAIT Tourner l'affichage pour une initialisation a plat
  Faire une fonction init
  
  FAIT  Matrices pour la boule
@@ -19,7 +19,6 @@
  du dernier objet dessine
  RESOLU  Nouveau Problème : Disparition de l'axe Z (bleu) a l'affichage
  
- FAIT Deplacer les axes en bas a gauche de la fenetre
  RESOLU Voir si on peut faire un axe qui fait moins "attacher" au plan
     Il sera enlever pour la fin
  
@@ -38,14 +37,13 @@
  
  FAIT Creer une fonction mouvement pour la boule,
  REDEFINI Definir la vitesse a partir de l'angle de Rotation du plateau
-    Faire un deplacecment plus naturel
+ Faire un deplacecment plus naturel :  en fonction de la circonference
  
  RESOLU Definir a partir de quel angle la boule ne bougera plus (plus de 90 la boule
  devrait "tomber" du plateau,
     On ne bouge pas en Z pour le moment, la balle reste collé et se deplace en fonction meme
     a l'envers, prendre apres 180 degre, inverser les deplacements
  
- Passer en GLFW, necessaire ?
  Etudier BOX2D pour
     la physique
     et le deplacement coulissant
@@ -76,6 +74,9 @@ float M_boule[16];
 ///
 float rotx = 10.;
 float roty = 10.;
+
+float rotationActuelleX = 0.;
+float rotationActuelleY = 0.;
 
 float deplacementX = 0.1;
 float deplacementY = 0.1;
@@ -116,7 +117,7 @@ void remplissageCoordMur(){
     
     cout << "MUR COORD Y" << endl;
     for(i=murCoordY.begin(); i!=murCoordY.end(); ++i){
-        std::cout<<(*i)<<std::endl;
+        cout<<(*i)<<std::endl;
     }
     
     Xmax = *max_element(murCoordX.begin(), murCoordX.end());
@@ -254,7 +255,7 @@ void def_boite(void){
 }
 
 
-
+//Axes : X rouge, Y Vert, - X, | Y
 void RotationM(float M[16], int valaxe, float angle) {
     glPushMatrix();
     glLoadIdentity();
@@ -263,13 +264,17 @@ void RotationM(float M[16], int valaxe, float angle) {
     switch (valaxe) {
         case 1: //x
             glRotatef(angle, 1.0, 0.0, 0.0);
+            rotationActuelleX += angle;
+            cout << "ROTATION SUR XXXXXXXXXXXXXXXXX " << angle << " X " <<rotationActuelleX << endl;
             break;
         case 2: //y
             glRotatef(angle, 0.0, 1.0, 0.0);
+            rotationActuelleY += angle;
+            cout <<"ROTATION SUR YYYYYYYYYYYYYYYYYY " <<  angle << " Y "<<   rotationActuelleY << endl;
             break;
-        case 3://z
-            glRotatef(angle, 0.0, 0.0, 1.0);
-            break;
+//        case 3://z
+//            glRotatef(angle, 0.0, 0.0, 1.0);
+//            break;
     }
     glGetFloatv(GL_MODELVIEW_MATRIX, M);
     glPopMatrix();
@@ -287,9 +292,9 @@ void MouvementM(float M[16], int valaxe, float distance) {
         case 2: //y
             glTranslatef( 0.0, distance , 0.0);
             break;
-        case 3://z
-            glTranslatef(0.0, 0.0, distance);
-            break;
+//        case 3://z
+//            glTranslatef(0.0, 0.0, distance);
+//            break;
             
     }
     glGetFloatv(GL_MODELVIEW_MATRIX, M);
@@ -302,9 +307,10 @@ void changerEtat(){
 }
 
 bool estChanger(){
-    if (etatMouvement == 1)
+    if (etatMouvement == 1){
         etatMouvement = 0;
         return true;
+    }
     return false;
 }
 
@@ -315,16 +321,16 @@ int donnerCas(int cas){
 
 bool collisionMurs(int cas){
     
-    if (cas ==0)
+    if (cas ==0) // gauche
         if ( bouleX <= Xmin +0.4)
             return true;
-    if (cas==1)
+    if (cas==1) // droite
         if (bouleX>= Xmax - 0.3)
             return true;
-    if (cas==2)
+    if (cas==2) //bas
         if (bouleY>= Ymax -0.3)
             return true;
-    if (cas==3)
+    if (cas==3) //haut
         if ( bouleY<= Ymin + 0.3)
             return true;
 
@@ -336,38 +342,84 @@ bool collisionMurs(int cas){
     return false;
 }
 
-void Timer(int value){
+//Axes : X rouge, Y Vert, - X, | Y
+int checkSigne(int axis){
     
-    cout << value << endl;
+    if (axis == 1){ //haut, bas
+        if (rotationActuelleX == 0.)
+            return 0;
+        else if (rotationActuelleX > 0. && rotationActuelleX <=90.){
+            if (collisionMurs(3)){
+//                cout << "COLLISION MUR DU BAS"<< endl;
+                return 0;}
+            return -1;
+        }else if (rotationActuelleX <0. && rotationActuelleX >= -90.){
+            if (collisionMurs(2)){
+ //               cout << "COLLISION MUR DU HAUT"<< endl;
+                return 0;}
+            return 1;
+            
+        }
+    }
+    
+    else if(axis == 2){ // droite, gauche
+        if (rotationActuelleY == 0.)
+            return 0;
+        else if (rotationActuelleY > 0. && rotationActuelleY <=90.){
+            if (collisionMurs(1)){
+//                cout << "COLLISION MUR DE DROITE" << endl;
+                return 0;}
+            return 1;
+        }else if (rotationActuelleY <0. && rotationActuelleY >= -90.){
+            if (collisionMurs(0)){
+//                cout << "COLLISION MUR DE GAUCHE" <<endl;
+                return 0;}
+            return -1;
+            
+        }
+    }
+}
+
+
+void affichageCoordBoule(int val){
+    cout << val << endl;
     cout << bouleX << endl;
     cout << bouleY << endl;
     cout << "---------------------" <<endl;
+}
+
+void Timer(int value){
+    
+    //affichageCoordBoule(value);
+    
     //on fait les deplacements en fonction de l'angle de rotation x ou y
-    if (value==0){ //Va vers la gauche
+    
+//Axes : X rouge, Y Vert, - X, | Y
+    if (value==0){ //Va vers la gauche // q
         if(collisionMurs(0) == 0){ //tant que la boule est entre 0 et Longueur - 36
-            MouvementM(M_boule,1,-deplacementX);
-            bouleX -= deplacementX;
+            MouvementM(M_boule,1,deplacementX * checkSigne(2));
+            bouleX = bouleX + (deplacementX * checkSigne(2));
             valeurChangement = 5;
         }else
             valeurChangement = 4;
-    }else if(value==1){ // va vers la droite
+    }else if(value==1){ // va vers la droite // d
         if(collisionMurs(1) == 0){
-            MouvementM(M_boule,1,deplacementX);
-            bouleX = bouleX + deplacementX;
+            MouvementM(M_boule,1,deplacementX * checkSigne(2));
+            bouleX = bouleX + (deplacementX * checkSigne(2));
             valeurChangement = 5;
         }else
             valeurChangement = 4;
-    }else if(value==2){ //va vers le haut
+    }else if(value==2){ //va vers le haut // z
         if(collisionMurs(2)==0){
-            MouvementM(M_boule,2,deplacementY);
-            bouleY += deplacementY;
+            MouvementM(M_boule,2,deplacementY * checkSigne(1));
+            bouleY = bouleY + (deplacementY * checkSigne(1));
             valeurChangement = 5;
         }else
             valeurChangement = 4;
-    }else if(value==3){ //va vers le bas
+    }else if(value==3){ //va vers le bas // s
         if(collisionMurs(3)==0){
-            MouvementM(M_boule,2,-deplacementY);
-            bouleY -= deplacementY;
+            MouvementM(M_boule,2,deplacementY * checkSigne(1));
+            bouleY = bouleY + (deplacementY * checkSigne(1));
             valeurChangement = 5;
         }else
             valeurChangement = 4;
@@ -375,19 +427,22 @@ void Timer(int value){
         MouvementM(M_boule,2,0);
         valeurChangement = 5;
     }
+
     glutPostRedisplay();
     
     if (valeurChangement == 5) {
         if(estChanger) //si on detecte une autre positions
-            glutTimerFunc(10, Timer, direction);
-        else //On ne rentre jamais ici
-            glutTimerFunc(10, Timer, value);
+            glutTimerFunc(20, Timer, direction);
+//        else {//On ne rentre jamais ici
+//            cout << "on ne rentre jamais iciiiiiiiiiiiiiiiiiiiiiiii"<<endl;
+//            glutTimerFunc(20, Timer, value);}
     }else
-        glutTimerFunc(10,Timer,valeurChangement);
+        
+        glutTimerFunc(20,Timer,valeurChangement);
    
 }
 
-
+//Axes : X rouge, Y Vert, - X, | Y
 void clavier(unsigned char key, int x, int y){
     switch (key){
         case 'q':
@@ -424,19 +479,7 @@ void clavier(unsigned char key, int x, int y){
             changerEtat();
             Timer(4);
             break;
-            
-            
-            //Zoom
-        case 'b':
-        case 'B':
-            MouvementM(M_boule,3,0.1);
-            break;
-            
-            //Dezoom de la balle
-        case 'n':
-        case 'N':
-            MouvementM(M_boule,3,-0.1);
-            break;
+        
             /*
              case 'i':
              case 'I':
@@ -470,7 +513,7 @@ void clavier(unsigned char key, int x, int y){
 //
 //}
 
-
+//Axes : X rouge, Y Vert, - X, | Y
 void dessinScene(){
     glPushMatrix();
         glMultMatrixf(M_plateau);
@@ -495,17 +538,20 @@ void dessinScene(){
     glPopMatrix();
 }
 
+//Axes : X rouge, Y Vert, - X, | Y
 void affichage(void){
     //on efface le buffer d'ecran
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPolygonMode(GL_BACK, GL_LINE); // a enlever par la suite
     
-    /*
+    
     glPushMatrix();
-        glRotatef(90.0,0,0,1);
+        glRotatef(-80.0,1,0,0);
+        //rotationActuelleX = 10.;
+        dessinScene();
     glPopMatrix();
-    */
-    dessinScene();
+    
+    
     
     
     //on affiche
