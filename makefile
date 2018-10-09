@@ -1,8 +1,8 @@
 UNAME_S := $(shell uname -s)
-SOURCES_3D = ./src/3DAR/2Dto3D.cpp
+SOURCES_3D = ./src/3DAR/2Dto3D.cpp ./src/Window/window.cpp
 ifeq ($(UNAME_S),Linux)
 	OPENCV_LIBS = -L/usr/local/lib -pthread -lopencv_imgcodecs -lopencv_imgproc -lopencv_core -lopencv_highgui
-	GLFW_LIBS = -lGLU -lGL -lglfw -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor
+	GLFW_LIBS = -lGLU -lGL  -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor -lglut
 	INC = -I/usr/local/include/opencv2/
 	OSX_LIBS=
 endif

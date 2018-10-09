@@ -1,3 +1,6 @@
+#ifndef LABYRINTHE
+#define LABYRINTHE
+
 class labyrinthe{
     public: 
     cv::Point2f PointDepart;
@@ -5,3 +8,5 @@ class labyrinthe{
     std::vector<cv::Point2f> x;
     std::vector<cv::Point2f> y;
 };
+
+#endif

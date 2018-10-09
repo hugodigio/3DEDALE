@@ -12,8 +12,39 @@ void creerlabyrinthe(labyrinthe x){
     }
 }
 
-void test(){
-    cout << "test OK" << endl;
+labyrinthe test(){
+    labyrinthe lab;
+
+    lab.PointDepart  = cv::Point2f(1,1);
+    lab.PointArrivee = cv::Point2f(10,10);
+    //1ere ligne
+    lab.x.push_back(cv::Point2f(2,3));
+    lab.y.push_back(cv::Point2f(2,6));
+
+    //2e ligne
+    lab.x.push_back(cv::Point2f(3,4));
+    lab.y.push_back(cv::Point2f(5,4));
+
+    //3e ligne
+    lab.x.push_back(cv::Point2f(5,7));
+    lab.y.push_back(cv::Point2f(8,7));
+
+    lab.x.push_back(cv::Point2f(0,0));
+    lab.y.push_back(cv::Point2f(10,0));
+
+
+    lab.x.push_back(cv::Point2f(0,0));
+    lab.y.push_back(cv::Point2f(0,10));
+
+
+    lab.x.push_back(cv::Point2f(10,10));
+    lab.y.push_back(cv::Point2f(0,10));
+
+
+    lab.x.push_back(cv::Point2f(10,10));
+    lab.y.push_back(cv::Point2f(10,0));
+
+    return lab;
 }
 
 void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
