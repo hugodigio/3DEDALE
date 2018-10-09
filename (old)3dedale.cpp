@@ -40,7 +40,6 @@ Mat getImage () {
 	return image;
 }
 
-/*
 Rect contoursConvexHull( Mat image, int tresh)
 {
     Mat image_convex;
@@ -72,7 +71,7 @@ Rect contoursConvexHull( Mat image, int tresh)
     return bounding_rect;
 }
 
-void old_detection ()
+void detection ()
 {
 	while(1){
 		Mat img = getImage();
@@ -104,57 +103,6 @@ void old_detection ()
 	p.x = x_init + width_init;
 	p.y = y_init + height_init;
 	points_initiaux.push_back(p);
-}
-*/
-
-void detection() {
-	Mat img = getImage();
-	int largeur = img.cols;
-	int hauteur = img.rows;
-
-	//Rectangle initial
-	Point pt1;
-	pt1.x = 250;
-	pt1.y = 100;
-	
-	Point pt2;
-	pt2.x = largeur - 250;
-	pt2.y = hauteur - 100;
-	
-	x_init 		= pt1.x;
-	y_init 		= pt1.y;
-	width_init  = pt2.x - pt1.x;
-	height_init = pt2.y - pt1.y;
-	
-	while(1){
-		Mat img = getImage();
-		flip(img, img, 1);
-		Mat image_lines = img.clone();
-    
-		rectangle(image_lines, pt1, pt2, (127,255,0), 5);
-		imshow( "Camera", image_lines );
-		char c = cvWaitKey(33);
-		if( c == 27 ) break;
-	}
-	
-	Point p;
-	
-	p.x = x_init;
-	p.y = y_init;
-	points_initiaux.push_back(p);
-	
-	p.x = x_init + width_init;
-	p.y = y_init;
-	points_initiaux.push_back(p);
-	
-	p.x = x_init;
-	p.y = y_init + height_init;
-	points_initiaux.push_back(p);
-	
-	p.x = x_init + width_init;
-	p.y = y_init + height_init;
-	points_initiaux.push_back(p);
-	
 }
 
 
@@ -189,58 +137,43 @@ void tracking() {
     {     
 		Mat frame = getImage();
 		flip(frame, frame, 1);
-        //Update the tracking result with new frame
-	    bool ok = multiTracker->update(frame);
-	    
-		if (!ok)
-			putText(frame, "Error", Point(25,25), FONT_HERSHEY_SIMPLEX, 1, Scalar(0,0,255),2);
+      //Update the tracking result with new frame
+	  multiTracker->update(frame);
 	 
 	  // Draw tracked objects
 	  for(unsigned i=0; i<multiTracker->getObjects().size(); i++)
 	  {
 		rectangle(frame, multiTracker->getObjects()[i], 2, 1);
 		
-		if (i == 0)
-			points_finaux.clear();
+		points_finaux.clear();
 		
 		Point p;
 	
-		/* Points dans l'image :
-		 * 		0    1
-		 * 		2    3
-		 * 
-		 * +70 permet d'avoir la moyenne
-		 */
+		p.x = multiTracker->getObjects()[i].x;
+		p.y = multiTracker->getObjects()[i].y;
+		points_finaux.push_back(p);
 		
-		if (i == 0){
-			p.x = multiTracker->getObjects()[i].x + 70;
-			p.y = multiTracker->getObjects()[i].y + 70;
-			points_finaux.push_back(p);
-		}
+		p.x = multiTracker->getObjects()[i].x + multiTracker->getObjects()[i].width;
+		p.y = multiTracker->getObjects()[i].y;
+		points_finaux.push_back(p);
 		
-		if (i == 1){
-			p.x = multiTracker->getObjects()[i].x + multiTracker->getObjects()[i].width + 70;
-			p.y = multiTracker->getObjects()[i].y + 70;
-			points_finaux.push_back(p);
-		}
+		p.x = multiTracker->getObjects()[i].x;
+		p.y = multiTracker->getObjects()[i].y + multiTracker->getObjects()[i].height;
+		points_finaux.push_back(p);
 		
-		if (i == 2){
-			p.x = multiTracker->getObjects()[i].x + 70;
-			p.y = multiTracker->getObjects()[i].y + multiTracker->getObjects()[i].height + 70;
-			points_finaux.push_back(p);
-		}
+		p.x = multiTracker->getObjects()[i].x + multiTracker->getObjects()[i].width;
+		p.y = multiTracker->getObjects()[i].y + multiTracker->getObjects()[i].height;
+		points_finaux.push_back(p);
+
+		homography = findHomography(points_finaux, points_initiaux, CV_RANSAC);
 		
-		if (i == 3){
-			p.x = multiTracker->getObjects()[i].x + multiTracker->getObjects()[i].width + 70;
-			p.y = multiTracker->getObjects()[i].y + multiTracker->getObjects()[i].height + 70;
-			points_finaux.push_back(p);
-		}
+		//cout << homography << endl;
 	  }
-	  homography = findHomography(points_finaux, points_initiaux, CV_RANSAC);
 	 
 	  // Show frame
 	  imshow("Camera", frame);
 	   
+	  // quit on x button
 	  if  (waitKey(1) == 27) break;
 	 
 		}
