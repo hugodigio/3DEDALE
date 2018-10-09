@@ -185,5 +185,5 @@ int main( int argc, char* argv[] ){
 	closeCamera();
 		
 	cvDestroyWindow("Camera");
-    return 0;
+	return 0;
 }
