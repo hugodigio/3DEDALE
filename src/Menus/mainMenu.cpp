@@ -1,7 +1,4 @@
-#include <iostream>
-#include <GL/freeglut.h>
-#include <GL/glu.h>
-#include <string>
+#include "mainMenu.hpp"
 
 #define NB_OPTIONS 4
 
@@ -9,9 +6,6 @@ using namespace std;
 
 int window_h = 600;
 int window_w = 800;
-
-int menustart_x = 0;
-int menustart_y = 0;
 
 //variable du menu
 int current_option_selected = 0;
@@ -22,34 +16,12 @@ string MainMenu[NB_OPTIONS] = {
     "QUITTER"
 };
 
-
-void init();
-void affichage();
-void redim(int width, int height);
-
-int main(int arg, char **argv){
-    glutInit(&arg,argv);
-    glutInitDisplayMode(GLUT_DEPTH | GLUT_RGBA | GLUT_DOUBLE);
-    glutInitWindowSize(window_w, window_h);
-    glutInitWindowPosition(10,10);
-    glutCreateWindow("test MENU");
-    
-    init();
-
-    glutDisplayFunc(affichage);
+void LoadMainMenu(){
+    mainMenu();
     glutReshapeFunc(redim);
-
-    glutMainLoop();
-
-    return 0;
+    glutPostRedisplay();
 }
 
-void init(){
-    glClearColor(0.0,0.0,0.0,0.0);
-    glMatrixMode(GLUT_SINGLE | GLUT_RGB);
-    glLoadIdentity();
-    glOrtho(0.0,window_w,window_h,0.0,0.0,1.0);
-}
 
 void printstring(float x, float y, void *font, string str, float r, float g, float b, float a){
     glColor3f(r,g,b);
@@ -63,7 +35,10 @@ void printstring(float x, float y, void *font, string str, float r, float g, flo
 }
 
 void display_menu(){
+    cout << "w:" << window_w << " h:" << window_h << endl;
     char buf[100] = {0};
+    printstring(0.0,0.0,GLUT_BITMAP_TIMES_ROMAN_24,"X",1.0,1.0,1.0,1.0);
+    printstring(window_w,0.0,GLUT_BITMAP_TIMES_ROMAN_24,"X",1.0,1.0,1.0,1.0);
     sprintf(buf, "3DEDALE");
     printstring((window_w/2)-((7*15)/2),50.0,GLUT_BITMAP_TIMES_ROMAN_24,buf,1.0,1.0,1.0,1.0);
     for(int i = 0; i<NB_OPTIONS; i++){
@@ -76,8 +51,19 @@ void display_menu(){
 
 void clavier(unsigned char key, int x, int y){
     switch(key){
+        case 27: //touche echap
+            LoadMainMenu();
+            break; 
         case 13: //touche entree
             switch(current_option_selected){
+                case 0: //JOUER
+                    LoadGame();
+                    break;
+                case 1: //fullscreen
+                    glutFullScreenToggle();
+                    break;
+                case 2: //test video
+                    break;
                 case 3: //QUITTER
                     exit(0);
                     break;
@@ -99,7 +85,8 @@ void specialKey(int keycode, int x, int y){
     
 }
 
-void affichage(){
+void mainMenu(){
+    cout << "affichage" << endl;
     display_menu();
     //Action Clavier
     glutKeyboardFunc(clavier);
@@ -109,10 +96,12 @@ void affichage(){
 }
 
 void redim(int width, int height){
-    cout << "w:" << width << " h:" << height << endl;
-    width = window_w;
-    height = window_h;
+    glViewport(0, 0, width, height);
+    window_w = width;
+    window_h = height;
+    glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-0.0,window_w,window_h,0.0,0.0,1.0);
+    glOrtho(0.0f, window_w, window_h, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glutSwapBuffers();
 }

@@ -1,5 +1,6 @@
 UNAME_S := $(shell uname -s)
-SOURCES_3D = ./src/3DAR/2Dto3D.cpp ./src/Window/window.cpp
+SOURCES_3D = ./src/3DAR/2Dto3D.cpp
+SOURCS_MENUS = ./src/Menus/window.cpp ./src/Menus/mainMenu.cpp ./src/Menus/game.cpp
 ifeq ($(UNAME_S),Linux)
 	OPENCV_LIBS = -L/usr/local/lib -pthread -lopencv_imgcodecs -lopencv_imgproc -lopencv_core -lopencv_highgui
 	GLFW_LIBS = -lGLU -lGL  -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor -lglut
@@ -11,7 +12,7 @@ endif
 all : main
  
 main: main.o 
-	$(CXX) -o main main.o $(SOURCES_3D) $(OSX_LIBS) $(OPENCV_LIBS) $(GLFW_LIBS)
+	$(CXX) -o main main.o $(SOURCES_3D) $(SOURCS_MENUS) $(OSX_LIBS) $(OPENCV_LIBS) $(GLFW_LIBS)
 	rm -rf *.o
 	./main
 	

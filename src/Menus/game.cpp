@@ -1,34 +1,14 @@
-#include "window.hpp"
+#include "game.hpp"
 
 labyrinthe lab;
 
-void createWindow(int argc, char **argv){
-    //Initialisation de GLUT
-    glutInit(&argc, argv);
-    
-    //Taille et emplacemet de la fenetre
-    glutInitWindowSize(800,600);
-    glutInitWindowPosition(200,100);
-    
-    //Type d'affichage, Tampon de profondeur, Double buffer
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-    
-    //Creation de la premiere fenetre
-    glutCreateWindow("3DEDALE");
-   
+void LoadGame(){
     lab = test();
-
-    //Association des callback
-    glutDisplayFunc(affichage);
-    glutReshapeFunc(redim);
-    
-    //Action Clavier
-    glutKeyboardFunc(clavier);
-
-    glutMainLoop();
+    glutDisplayFunc(gameDisplayFunc);
+    glutPostRedisplay();
 }
 
-void affichage(void){
+void gameDisplayFunc(void){
     // Scale to window size
     glViewport(0, 0, 800, 600);
 
@@ -63,22 +43,12 @@ void affichage(void){
     def_axes();
 
     glColor4f(0.0f, 0.0f, 1.0f, 1.0f);  //RGBA values of text color
-glRasterPos2i(100, 120);            //Top left corner of text
-const unsigned char* t = reinterpret_cast<const unsigned char *>("text to render");
-// Since 2nd argument of glutBitmapString must be const unsigned char*
-glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18,'c');
+    glRasterPos2i(100, 120);            //Top left corner of text
+    const unsigned char* t = reinterpret_cast<const unsigned char *>("text to render");
+    // Since 2nd argument of glutBitmapString must be const unsigned char*
+    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18,'c');
 
     //on affiche
     glutSwapBuffers();
 
 }
-
-void clavier(unsigned char key, int x, int y){
-    //code
-}
-void redim(int width, int height){
-    //code
-}
-
-
-//g++ glfw_init.cpp -lglfw -lGL

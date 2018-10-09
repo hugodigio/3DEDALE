@@ -1,7 +1,7 @@
 #include <iostream>
 #include <GL/glut.h>
 #include <GL/glu.h>
-#include "./src/Window/window.hpp"
+#include "./src/Menus/window.hpp"
 
 /*
 A FAIRE:
