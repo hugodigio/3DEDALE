@@ -34,7 +34,7 @@ void closeCamera() {
 Mat getImage () {
 	IplImage* frame;
 	frame = cvQueryFrame( capture );
-    Mat image = cvarrToMat(frame);
+	Mat image = cvarrToMat(frame);
 	return image;
 }
 
@@ -115,56 +115,56 @@ void tracking() {
     {     
 		Mat frame = getImage();
 		flip(frame, frame, 1);
-	    bool ok = multiTracker->update(frame);
+		bool ok = multiTracker->update(frame);
 	    
 		if (!ok)
 			putText(frame, "Error", Point(25,25), FONT_HERSHEY_SIMPLEX, 1, Scalar(0,0,255),2);
 
-	  for(unsigned i=0; i<multiTracker->getObjects().size(); i++)
-	  {
-		rectangle(frame, multiTracker->getObjects()[i], 2, 1);
+		for(unsigned i=0; i<multiTracker->getObjects().size(); i++)
+		{
+			rectangle(frame, multiTracker->getObjects()[i], 2, 1);
 		
-		if (i == 0)
-			points_finaux.clear();
+			if (i == 0)
+				points_finaux.clear();
 		
-		Point p;
-	
-		/* Points dans l'image :
-		 * 		0    1
-		 * 		2    3
-		 * 
-		 * +70 permet d'avoir la moyenne
-		 */
+			Point p;
 		
-		if (i == 0){
-			p.x = multiTracker->getObjects()[i].x + 70;
-			p.y = multiTracker->getObjects()[i].y + 70;
-			points_finaux.push_back(p);
+			/* Points dans l'image :
+			 * 		0    1
+			 * 		2    3
+			 * 
+			 * +70 permet d'avoir la moyenne
+			 */
+			
+			if (i == 0){
+				p.x = multiTracker->getObjects()[i].x + 70;
+				p.y = multiTracker->getObjects()[i].y + 70;
+				points_finaux.push_back(p);
+			}
+			
+			if (i == 1){
+				p.x = multiTracker->getObjects()[i].x + multiTracker->getObjects()[i].width + 70;
+				p.y = multiTracker->getObjects()[i].y + 70;
+				points_finaux.push_back(p);
+			}
+			
+			if (i == 2){
+				p.x = multiTracker->getObjects()[i].x + 70;
+				p.y = multiTracker->getObjects()[i].y + multiTracker->getObjects()[i].height + 70;
+				points_finaux.push_back(p);
+			}
+			
+			if (i == 3){
+				p.x = multiTracker->getObjects()[i].x + multiTracker->getObjects()[i].width + 70;
+				p.y = multiTracker->getObjects()[i].y + multiTracker->getObjects()[i].height + 70;
+				points_finaux.push_back(p);
+			}
 		}
-		
-		if (i == 1){
-			p.x = multiTracker->getObjects()[i].x + multiTracker->getObjects()[i].width + 70;
-			p.y = multiTracker->getObjects()[i].y + 70;
-			points_finaux.push_back(p);
-		}
-		
-		if (i == 2){
-			p.x = multiTracker->getObjects()[i].x + 70;
-			p.y = multiTracker->getObjects()[i].y + multiTracker->getObjects()[i].height + 70;
-			points_finaux.push_back(p);
-		}
-		
-		if (i == 3){
-			p.x = multiTracker->getObjects()[i].x + multiTracker->getObjects()[i].width + 70;
-			p.y = multiTracker->getObjects()[i].y + multiTracker->getObjects()[i].height + 70;
-			points_finaux.push_back(p);
-		}
-	  }
-	  homography = findHomography(points_finaux, points_initiaux, CV_RANSAC);
+		homography = findHomography(points_finaux, points_initiaux, CV_RANSAC);
 
-	  imshow("Camera", frame);
+		imshow("Camera", frame);
 	   
-	  if  (waitKey(1) == 27) break;
+		if  (waitKey(1) == 27) break;
 	 
 		}
 	
