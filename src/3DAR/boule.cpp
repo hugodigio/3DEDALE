@@ -108,15 +108,20 @@ void initEquDroites (){
     float tmpCoeff, tmpConstK;
     vector<Point2f> tmpA = vectPointcopy(A);
     vector<Point2f> tmpB = vectPointcopy(B);
+   
     
-    Point2f ptDep = tmpA.back();
-    tmpA.pop_back();
-    Point2f ptArr = tmpB.back();
-    tmpB.pop_back();
-    
-    tmpCoeff = ((ptArr.y-ptDep.y)/(ptArr.x-ptDep.x));
-    tmpConstK = (ptDep.y)-(tmpCoeff*(ptDep.x));
-    
+    for (int i=0; i<tmpA.size(); i++){
+        Point2f ptDep = tmpA.back();
+        tmpA.pop_back();
+        Point2f ptArr = tmpB.back();
+        tmpB.pop_back();
+        
+        tmpCoeff = ((ptArr.y-ptDep.y)/(ptArr.x-ptDep.x));
+        tmpConstK = (ptDep.y)-(tmpCoeff*(ptDep.x));
+        
+        coeffDirecteur.push_back(tmpCoeff);
+        constK.push_back(tmpConstK);
+    }
 }
 
 bool findIfIn (Point2f p){ //ou Point
