@@ -10,7 +10,7 @@ endif
 ifeq ($(UNAME_S),Darwin)
 	OPENCV_LIBS = -L ./lib/ -lIlmImf -llibtiff -lopencv_imgcodecs -lippicv -llibwebp -lopencv_imgproc -llibjasper -lopencv_core -lzlib -llibjpeg -lopencv_hal -llibpng -lopencv_highgui 
 #	BOX2D_LIBS = -L ./lib/ -lBox2D
-	INC = -I ./include/
+	INC = -I ./lib/include/
 	FLAGS = -framework OpenGL -framework glut -framework OpenCL -framework Cocoa 
 endif
 
