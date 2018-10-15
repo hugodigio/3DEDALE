@@ -17,8 +17,7 @@ void createWindow(int argc, char **argv){
     glutCreateWindow("3DEDALE");
 
     //Association des callback
-    glutDisplayFunc(mainMenu);
-    glutReshapeFunc(redim);
+    LoadMainMenu(800, 600);
     
     glutMainLoop();
 }

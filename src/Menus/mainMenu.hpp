@@ -8,8 +8,7 @@
 #include "game.hpp"
 
 void init();
-void affichage();
-void redim(int width, int height);
 void mainMenu();
+void LoadMainMenu(int window_width, int window_height);
 
 #endif

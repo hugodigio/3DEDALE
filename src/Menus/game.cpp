@@ -1,16 +1,33 @@
 #include "game.hpp"
+#include "mainMenu.hpp"
 
 labyrinthe lab;
+int window_w_game;
+int window_h_game;
 
-void LoadGame(){
-    lab = test();
-    glutDisplayFunc(gameDisplayFunc);
-    glutPostRedisplay();
+void clavier_game(unsigned char key, int x, int y){
+    switch(key){
+        case 27: //touche echap
+            LoadMainMenu(window_w_game, window_h_game);
+            break;
+    }
+}
+void specialKey_game(int keycode, int x, int y){
+    //code
+    
 }
 
-void gameDisplayFunc(void){
+void souris_game(int button, int state, int x, int y){
+    //code
+}
+
+void souris_mouvement_game(int x, int y){
+    //code
+}
+
+void display_game(void){
     // Scale to window size
-    glViewport(0, 0, 800, 600);
+    glViewport(0, 0, window_w_game, window_h_game);
 
     // Draw stuff
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -27,6 +44,7 @@ void gameDisplayFunc(void){
 
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
+    glEnable(GL_DEPTH_TEST);
     
     glPushMatrix();
         float lightPosition[4] = {2, 3, 10, 1};
@@ -51,4 +69,32 @@ void gameDisplayFunc(void){
     //on affiche
     glutSwapBuffers();
 
+}
+
+void redim_game(int window_width, int window_height){
+    window_w_game = window_width;
+    window_h_game = window_height;
+    glViewport(0, 0, window_w_game, window_h_game);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0.0f, window_w_game, window_h_game, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glutSwapBuffers();
+}
+
+void LoadGame(int window_width, int window_height){
+    window_w_game = window_width;
+    window_h_game = window_height;
+    lab = test();
+    glutDisplayFunc(display_game);
+    glutReshapeFunc(redim_game);
+
+
+    //clavier, souris, motion
+    glutKeyboardFunc(clavier_game);
+    glutSpecialFunc(specialKey_game);
+    glutMouseFunc(souris_game);
+    glutPassiveMotionFunc(souris_mouvement_game);
+
+    glutPostRedisplay();
 }
