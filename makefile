@@ -8,9 +8,9 @@ ifeq ($(UNAME_S),Linux)
 endif
 
 ifeq ($(UNAME_S),Darwin)
-	OPENCV_LIBS = -L../lib/ -lIlmImf -llibtiff -lopencv_imgcodecs -lippicv -llibwebp -lopencv_imgproc -llibjasper -lopencv_core -lzlib -llibjpeg -lopencv_hal -llibpng -lopencv_highgui 
-	BOX2D_LIBS = -L../lib/ -lBox2D
-#	INC = -I../include/
+	OPENCV_LIBS = -L ./lib/ -lIlmImf -llibtiff -lopencv_imgcodecs -lippicv -llibwebp -lopencv_imgproc -llibjasper -lopencv_core -lzlib -llibjpeg -lopencv_hal -llibpng -lopencv_highgui 
+#	BOX2D_LIBS = -L ./lib/ -lBox2D
+	INC = -I ./include/
 	FLAGS = -framework OpenGL -framework glut -framework OpenCL -framework Cocoa 
 endif
 
@@ -18,7 +18,7 @@ all: main
 
 main: main.cpp 
 #	$(CXX) -o main main.cpp $(INC) $(FLAGS) $(OPENCV_LIBS) $(BOX2D_LIBS) 
-	$(CXX) -o main main.cpp $(FLAGS)  
+	$(CXX) -o main main.cpp $(INC) $(OPENCV_LIBS) $(FLAGS)  
 
 clean:
 	rm main

@@ -5,95 +5,160 @@
 /*
  FAIT Voir si le soucis de couleur de la boule est regle, par defaut la couleur verte
  du dernier objet dessine
- FAIRE Uniformisez la création du plateau (et déplacer par Translation et non pas
- recreer par coordonnées)
+ 
  FAIRE Definir la vitesse a partir de l'angle de Rotation du plateau
  FAIRE un deplacecment plus naturel :  en fonction de la circonference
- FAIRE des murs avec une epaisseur,
+ 
  FAIRE un tableau de ligne pour dessiner les murs internes
+ Utiliser ce tableau de lignes pour checker les collisions
  
- Voir la latence
+ Voir la latence du timer
  Mouvement diagonale
- Regler le soucis de bidouillage du mur x
- Revoir pour les murs ce ne sera pas max et min
- 
+
  Commenter
  
  */
 
     
 void remplissageCoordMur(){
-    //Murs
-    murCoordX.push_back(-LONGUEUR*1./2.);
-    murCoordY.push_back(SECTION*1./2.);
-    
-    murCoordX.push_back(LONGUEUR*1./2.);
-    murCoordY.push_back(SECTION*1./2.);
-    
-    murCoordX.push_back(LONGUEUR*1./2.);
-    murCoordY.push_back(-SECTION*1./2.);
-    
-    murCoordX.push_back(-LONGUEUR*1./2.);
-    murCoordY.push_back(-SECTION*1./2.);
-
-    bouleX =-0.3-SECTION/2.;
-    bouleY =-0.3+SECTION/2.;
-
-    cout << "MUR COORD X" << endl;
-    vector <float>::const_iterator i;
-    for( i=murCoordX.begin(); i!=murCoordX.end(); ++i){
-        cout<<(*i)<<endl;
-    }
-
-    cout << "MUR COORD Y" << endl;
-    for(i=murCoordY.begin(); i!=murCoordY.end(); ++i){
-        cout<<(*i)<<std::endl;
-    }
-
-    Xmax = *max_element(murCoordX.begin(), murCoordX.end());
-//    cout<<"XMax value: "<<Xmax<<endl;
-    Ymax = *max_element(murCoordY.begin(), murCoordY.end());
-//    cout<<"XMax value: "<<Ymax<<endl;
+//    //Murs
+//    murCoordX.push_back(-LONGUEUR*1./2.);
+//    murCoordY.push_back(SECTION*1./2.);
 //
-    Xmin = *min_element(murCoordX.begin(), murCoordX.end());
-//    cout<<"XMin value: "<<Xmin<<endl;
-    Ymin = *min_element(murCoordY.begin(), murCoordY.end());
-//    cout<<"XMin value: "<<Ymin<<endl;
+//    murCoordX.push_back(LONGUEUR*1./2.);
+//    murCoordY.push_back(SECTION*1./2.);
+//
+//    murCoordX.push_back(LONGUEUR*1./2.);
+//    murCoordY.push_back(-SECTION*1./2.);
+//
+//    murCoordX.push_back(-LONGUEUR*1./2.);
+//    murCoordY.push_back(-SECTION*1./2.);
+//
+//    bouleX =-0.3-SECTION/2.;
+//    bouleY =-0.3+SECTION/2.;
+//
+//    cout << "MUR COORD X" << endl;
+//    vector <float>::const_iterator i;
+//    for( i=murCoordX.begin(); i!=murCoordX.end(); ++i){
+//        cout<<(*i)<<endl;
+//    }
+//
+//    cout << "MUR COORD Y" << endl;
+//    for(i=murCoordY.begin(); i!=murCoordY.end(); ++i){
+//        cout<<(*i)<<std::endl;
+//    }
+
+//    Xmax = *max_element(murCoordX.begin(), murCoordX.end());
+////    cout<<"XMax value: "<<Xmax<<endl;
+//    Ymax = *max_element(murCoordY.begin(), murCoordY.end());
+////    cout<<"XMax value: "<<Ymax<<endl;
+//    Xmin = *min_element(murCoordX.begin(), murCoordX.end());
+////    cout<<"XMin value: "<<Xmin<<endl;
+//    Ymin = *min_element(murCoordY.begin(), murCoordY.end());
+////    cout<<"XMin value: "<<Ymin<<endl;
 
     
     
-    murCoord.push_back(Point(-LONGUEUR*1./2.,SECTION*1./2.));
-    murCoord.push_back(Point(LONGUEUR*1./2.,SECTION*1./2.));
-    murCoord.push_back(Point(LONGUEUR*1./2.,-SECTION*1./2.));
-    murCoord.push_back(Point(-LONGUEUR*1./2.,SECTION*1./2.));
+//    murCoord.push_back(Point(-LONGUEUR*1./2.,SECTION*1./2.));
+//    murCoord.push_back(Point(LONGUEUR*1./2.,SECTION*1./2.));
+//
+//    murCoord.push_back(Point(LONGUEUR*1./2.,-SECTION*1./2.));
+//    murCoord.push_back(Point(-LONGUEUR*1./2.,-SECTION*1./2.));
+//
+//    vector <Point>::const_iterator j;
+//    for( j=murCoord.begin(); j!=murCoord.end(); ++j){
+//        cout<<(*j).x << " ET " << (*j).y <<endl;
+//    }
     
-    vector <Point>::const_iterator j;
-    for( j=murCoord.begin(); j!=murCoord.end(); ++j){
-        cout<<(*j).x << " ET " << (*j).y <<endl;
+    
+    A.push_back(Point2f(-LONGUEUR*1./2.,SECTION*1./2.));
+    B.push_back(Point2f(LONGUEUR*1./2.,SECTION*1./2.));
+    A.push_back(Point2f(LONGUEUR*1./2.,SECTION*1./2.));
+    B.push_back(Point2f(LONGUEUR*1./2.,-SECTION*1./2.));
+    A.push_back(Point2f(LONGUEUR*1./2.,-SECTION*1./2.));
+    B.push_back(Point2f(-LONGUEUR*1./2.,-SECTION*1./2.));
+    A.push_back(Point2f(-LONGUEUR*1./2.,-SECTION*1./2.));
+    B.push_back(Point2f(-LONGUEUR*1./2.,SECTION*1./2.));
+    
+
+}
+
+vector<Point2f> vectPointcopy(vector<Point2f> vect){
+    
+    vector <Point2f> newVector;
+    for (int i=0; i<vect.size(); i++)
+        newVector.push_back(vect[i]);
+    
+    return newVector;
+}
+
+vector<float> vectCopy(vector<float> vect){
+    
+    vector <float> newVector;
+    for (int i=0; i<vect.size(); i++)
+        newVector.push_back(vect[i]);
+    
+    return newVector;
+}
+
+void initEquDroites (){
+    //creation d'un vecteur des equations des droites, stock
+    // verifie si P.y = coeffDirecteur * P.x + k
+
+    float tmpCoeff, tmpConstK;
+    vector<Point2f> tmpA = vectPointcopy(A);
+    vector<Point2f> tmpB = vectPointcopy(B);
+    
+    Point2f ptDep = tmpA.back();
+    tmpA.pop_back();
+    Point2f ptArr = tmpB.back();
+    tmpB.pop_back();
+    
+    tmpCoeff = ((ptArr.y-ptDep.y)/(ptArr.x-ptDep.x));
+    tmpConstK = (ptDep.y)-(tmpCoeff*(ptDep.x));
+    
+}
+
+bool findIfIn (Point2f p){ //ou Point
+    
+    //equation y = coeff * x + k
+    
+    vector<float> tmpCoeff = vectCopy(coeffDirecteur);
+    vector<float> tmpConstK = vectCopy(constK);
+    float tmpEq = 0;
+    float delta = 0.4;
+    for (int i=0; i<tmpCoeff.size(); i++){
+        tmpEq = (tmpCoeff.back()) * p.x + (tmpConstK.back());
+        tmpCoeff.pop_back();
+        tmpConstK.pop_back();
+        if ( p.y <= tmpEq + delta && p.y >= tmpEq - delta )
+            return true;
     }
-
+    
+    
+    return false;
 }
 
 
 //Trace les axes, X rouge, Y Vert, Z Bleu
-//void def_axes(void){
-//
-//    glBegin(GL_LINES);
-//    //x
-    //    glColor3f(1.0, 0.0, 0.0);
-    //    glVertex3f(-1.,0.0,0.0);
-    //    glVertex3f(1.,0.0,0.0);
-    //    //y
-    //    glColor3f(0.0, 1.0, 0.0);
-    //    glVertex3f(0.0,-1,0.0);
-    //    glVertex3f(0.0,1.,0.0);
-    //    //z
-    //    glColor3f(0.0, 0.0, 1.0);
-    //    glVertex3f(0.0,0.0,-1.);
-    //    glVertex3f(0.0,0.0,1.);
-//    glEnd();
-//
-//}
+void def_axes(void){
+
+    glBegin(GL_LINES);
+    //x
+        glColor3f(1.0, 0.0, 0.0);
+        glVertex3f(-1.,0.0,0.0);
+        glVertex3f(1.,0.0,0.0);
+        //y
+        glColor3f(0.0, 1.0, 0.0);
+        glVertex3f(0.0,-1,0.0);
+        glVertex3f(0.0,1.,0.0);
+        //z
+        glColor3f(0.0, 0.0, 1.0);
+        glVertex3f(0.0,0.0,-1.);
+        glVertex3f(0.0,0.0,1.);
+    glEnd();
+
+}
 
 
 void def_carre(void){
@@ -131,64 +196,64 @@ void def_plateau(void){
 }
 
 
-//void def_boite(void){
-//
-//    // face bleu, le fond
-//    //on le met devant en translatant selon z
-//    glPushMatrix();
-    //    glColor3f(0.0, 0.1, 1.0);
-    //    glTranslatef(0.0, 0.0, -SECTION/4.0);
-    //    glRotatef(180, 1, 0, 0);
-    //    glScalef(LONGUEUR,SECTION,SECTION);
-    //    def_carre();
-//    glPopMatrix();
-//
-//    // face rouge, de droite
-//    //rotation de 90 selon l'axe des y et translation sur les x et z
-//    glPushMatrix();
-    //    glColor3f(1.0, 0.0, 0.0);
-    //    glTranslatef(LONGUEUR/2.0, 0.0, 0.0);
-    //    glRotatef(90, 0, 1, 0);
-    //    glScalef(SECTION/2.,SECTION,SECTION);
-    //    //glScalef(SECTION,SECTION,SECTION/2.0);
-    //    //glScalef(LONGUEUR*a,SECTION,SECTION);
-//    def_carre();
-//
-//    glPopMatrix();
-//
-//    // face jaune, de gauche
-//    glPushMatrix();
-    //    glColor3f(1.0, 1.0, 0.0);
-    //    glTranslatef(-LONGUEUR/2.0, 0.0,0.0);
-    //    glRotatef(-90, 0, 1, 0);
-    //    glScalef(SECTION/2.,SECTION,SECTION);
-    //    //glScalef(SECTION,LONGUEUR*a,SECTION);
-    //    //glScalef(LONGUEUR*a,SECTION,SECTION);
-    //    def_carre();
-//    glPopMatrix();
-//
-//    // face blanche, de haut
-//
-//    glPushMatrix();
-    //    glColor3f(1.0, 1.0, 1.0);
-    //    glTranslatef(0.0, SECTION/2.0, 0.0);
-    //    glRotatef(-90, 1, 0, 0);
-    //    glScalef(LONGUEUR,SECTION/2.,SECTION);
-    //    //glScalef(SECTION,LONGUEUR*a,SECTION);
-    //    def_carre();
-//    glPopMatrix();
-//
-//    //face de bas, verte
-//    glPushMatrix();
-    //    glColor3f(0.0, 1.0, 0.0);
-    //    glTranslatef(0.0, -SECTION/2.0, 0.0);
-    //    glRotatef(90, 1, 0, 0);
-    //    glScalef(LONGUEUR,SECTION/2.,SECTION);
-    //    //glScalef(SECTION,LONGUEUR*a,SECTION);
-    //    def_carre();
-//    glPopMatrix();
-//
-//}
+void def_boite(void){
+
+    // face bleu, le fond
+    //on le met devant en translatant selon z
+    glPushMatrix();
+        glColor3f(0.0, 0.1, 1.0);
+        glTranslatef(0.0, 0.0, -SECTION/4.0);
+        glRotatef(180, 1, 0, 0);
+        glScalef(LONGUEUR,SECTION,SECTION);
+        def_carre();
+    glPopMatrix();
+
+    // face rouge, de droite
+    //rotation de 90 selon l'axe des y et translation sur les x et z
+    glPushMatrix();
+        glColor3f(1.0, 0.0, 0.0);
+        glTranslatef(LONGUEUR/2.0, 0.0, 0.0);
+        glRotatef(90, 0, 1, 0);
+        glScalef(SECTION/2.,SECTION,SECTION);
+        //glScalef(SECTION,SECTION,SECTION/2.0);
+        //glScalef(LONGUEUR*a,SECTION,SECTION);
+    def_carre();
+
+    glPopMatrix();
+
+    // face jaune, de gauche
+    glPushMatrix();
+        glColor3f(1.0, 1.0, 0.0);
+        glTranslatef(-LONGUEUR/2.0, 0.0,0.0);
+        glRotatef(-90, 0, 1, 0);
+        glScalef(SECTION/2.,SECTION,SECTION);
+        //glScalef(SECTION,LONGUEUR*a,SECTION);
+        //glScalef(LONGUEUR*a,SECTION,SECTION);
+        def_carre();
+    glPopMatrix();
+
+    // face blanche, de haut
+
+    glPushMatrix();
+        glColor3f(1.0, 1.0, 1.0);
+        glTranslatef(0.0, SECTION/2.0, 0.0);
+        glRotatef(-90, 1, 0, 0);
+        glScalef(LONGUEUR,SECTION/2.,SECTION);
+        //glScalef(SECTION,LONGUEUR*a,SECTION);
+        def_carre();
+    glPopMatrix();
+
+    //face de bas, verte
+    glPushMatrix();
+        glColor3f(0.0, 1.0, 0.0);
+        glTranslatef(0.0, -SECTION/2.0, 0.0);
+        glRotatef(90, 1, 0, 0);
+        glScalef(LONGUEUR,SECTION/2.,SECTION);
+        //glScalef(SECTION,LONGUEUR*a,SECTION);
+        def_carre();
+    glPopMatrix();
+
+}
 
 
 //Axes : X rouge, Y Vert, - X, | Y
@@ -273,20 +338,29 @@ bool collisionMurs(int cas){
 //            return true;
 //
 
-    Point boule(bouleX,bouleY);
-    vector <Point>::const_iterator i;
-    for( i=murCoord.begin(); i!=murCoord.end(); ++i){
-        Point p ((*i).x, (*i).y);
-        if(boule == p)
-            //cout << boule.x << " et " << (*i).x << endl;
-            return true;
-    }
+   
     
-    //recherche des coords des murs pour detecter collision
-    //    if (find(murCoordX.begin(), murCoordX.end(), bouleX) != murCoordX.end())
-    //        return true;
-    //    else if(find(murCoordY.begin(), murCoordY.end(), bouleY) != murCoordY.end())
-    //        return true;
+    Point2f boule(bouleX,bouleY);
+    if (findIfIn(boule))
+        return true;
+    
+    
+    
+//    Point boule(bouleX,bouleY);
+//    vector <Point>::const_iterator i;
+//    for( i=murCoord.begin(); i!=murCoord.end(); ++i){
+//        Point p ((*i).x, (*i).y);
+//        if(boule == p)
+//            //cout << boule.x << " et " << (*i).x << endl;
+//            return true;
+//    }
+//
+    
+//    recherche des coords des murs pour detecter collision
+//        if (find(murCoordX.begin(), murCoordX.end(), bouleX) != murCoordX.end())
+//            return true;
+//        else if(find(murCoordY.begin(), murCoordY.end(), bouleY) != murCoordY.end())
+//            return true;
     return false;
 }
 

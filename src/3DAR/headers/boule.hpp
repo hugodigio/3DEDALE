@@ -8,6 +8,11 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui.hpp"
+using namespace cv;
+
 //#include <Box2D/Box2D.h>
 
 #define LONGUEUR 5
@@ -25,6 +30,12 @@ struct Point
         else return false;
     }
 };
+
+//changer par struct dans le fichier labyrinthe
+// cv::Point2f PointdeDepart;
+// cv::Point2f PointdArrivee;
+// vector <cv::Point2f> A;
+// vector <cv::Point2f> B;
 
 
 
@@ -49,10 +60,17 @@ int direction = 4;
 float bouleX = 0.;
 float bouleY = 0.;
 
-vector <Point> murCoord;
+//vector <Point> murCoord;
 
-vector<float> murCoordX;
-vector<float> murCoordY;
+//vector<float> murCoordX;
+//vector<float> murCoordY;
+
+
+vector <float> coeffDirecteur;
+vector <float> constK;
+vector <Point2f> A;//initialiser dans remplissageCoordMur (temporaire)
+vector <Point2f> B;//initialiser dans remplissageCoordMur (temporaire)
+
 
 double Xmax, Ymax;
 double Xmin, Ymin;
@@ -60,12 +78,12 @@ double Xmin, Ymin;
 
 //Fonctions PROTOTYPES
 void remplissageCoordMur();
-//void def_axes(void);
+void def_axes(void);
 
 void def_carre(void);
 void def_boule(void);
 void def_plateau(void);
-//void def_boite(void);
+void def_boite(void);
 
 void RotationM(float M[16], int valaxe, float angle);
 void MouvementM(float M[16], int valaxe, float distance);
