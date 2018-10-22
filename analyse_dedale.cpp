@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <vector>
+#include <list>
 #include <limits>
 #include <queue>
 
@@ -17,7 +18,7 @@ void findWalls(Mat image, int tresh_angle);
 
 /// Global Variables
 Mat img; Mat templ; Mat result;
-
+Mat image2;
 int match_method;
 int max_Trackbar = 5;
 int tresh_ang = 0;
@@ -28,6 +29,19 @@ Mat image_rect, image_circle, image_walls;
 
 int treshold_value = 0;
 int cpt_frame = 0;
+
+
+static void onMouse(int event,int x,int y,int,void*)
+{
+    //this function will be called every time you move your mouse over the image
+    // the coordinates will be in x and y variables
+    Mat image_mouse      = Mat(500, 500, CV_8UC3, cv::Scalar(255,0,0));
+    string str = "a : " + to_string(x) + ", " + to_string(y) +  " .";
+    putText(image_mouse, str, Point(100,100),FONT_HERSHEY_COMPLEX_SMALL,1,Scalar(10,10,255));
+
+    imshow("mouse",image_mouse);
+}
+
 
 Rect contoursConvexHull( Mat image, int tresh) {
     Mat image_convex;
@@ -216,7 +230,250 @@ bool equalLines (Vec4i vec_a, Vec4i vec_b) {
     return false;
 }
 
+//Donner le meme sens a toutes les lignes ( v ^ )
+vector<Vec4i> normalizedLines ( vector<Vec4i> lines) {
+    
+    int x0, y0, x1, y1;
+    
+    for( size_t i = 0; i < lines.size(); i++ ) {
+        
+        x0 = lines[i][0];
+        y0 = lines[i][1];
+        x1 = lines[i][2];
+        y1 = lines[i][3];
+        
+        if(y0 > y1 + 100) {
+            lines[i][0] = x1;
+            lines[i][1] = y1;
+            lines[i][2] = x0;
+            lines[i][3] = y0;
+        }
+    }
+    return lines;
+}
 
+vector<Vec4i> mixLines ( vector<Vec4i> lines) {
+    
+    int fontFace = FONT_HERSHEY_COMPLEX_SMALL;
+    double fontScale=3.5;
+    int cpt = 0;
+    int largeur = 200;
+    int x0a, y0a, x1a, y1a, x0b, y0b, x1b, y1b;
+    
+    for( size_t i = 0; i < lines.size(); i++ )
+    {
+        x0a = lines[i][0];
+        y0a = lines[i][1];
+        x1a = lines[i][2];
+        y1a = lines[i][3];
+        for( size_t j = 0; j < lines.size(); j++ ) {
+            
+            if( i != j) {
+                x0b = lines[j][0];
+                y0b = lines[j][1];
+                x1b = lines[j][2];
+                y1b = lines[j][3];
+                
+                //Horizontale
+                if( (x0b >= x0a && x0b <= x1a && x1b >= x1a) && estCompris(y0a, y0b, largeur) && estCompris(y1a, y1b, largeur)) {
+                    
+                    cpt ++;
+                    putText(image2, to_string(cpt), Point(x0b,y0b),fontFace,fontScale,Scalar(10,50,255));
+                    
+                    Vec4i ligne;
+                    ligne[0] = x0a;    //x0
+                    ligne[1] = y0a;    //y0
+                    ligne[2] = x1b;    //x1
+                    ligne[3] = y1a;    //y1
+                    
+                    line( image2, Point(x0a, y0a), Point(x1a, y1a), Scalar(127,255,100), 3, 8 );
+                    line( image2, Point(x0b, y0b), Point(x1b, y1b), Scalar(127,255,100), 3, 8 );
+                    
+                    if(i > j) {
+                        lines.erase(lines.begin() + i);
+                        lines.erase(lines.begin() + j);
+                    } else {
+                        lines.erase(lines.begin() + j);
+                        lines.erase(lines.begin() + i);
+                    }
+                    
+                    i = 0;
+                    j = 0;
+                    
+                    lines.push_back(ligne);
+                    break;
+                }
+                
+                //Verticale
+                if( (y0b >= y0a && y0b <= y1a && y1b >= y1a) && estCompris(x0a, x0b, largeur) && estCompris(x1a, x1b, largeur)) {
+                    
+                    cpt ++;
+                    putText(image2, to_string(cpt), Point(x0b,y0b),fontFace,fontScale,Scalar(10,50,255));
+                    
+                    Vec4i ligne;
+                    ligne[0] = x0a;    //x0
+                    ligne[1] = y0a;    //y0
+                    ligne[2] = x1a;    //x1
+                    ligne[3] = y1b;    //y1
+                    
+                    line( image2, Point(x0a, y0a), Point(x1a, y1a), Scalar(127,255,100), 3, 8 );
+                    line( image2, Point(x0b, y0b), Point(x1b, y1b), Scalar(127,255,100), 3, 8 );
+                    
+                    if(i > j) {
+                        lines.erase(lines.begin() + i);
+                        lines.erase(lines.begin() + j);
+                    } else {
+                        lines.erase(lines.begin() + j);
+                        lines.erase(lines.begin() + i);
+                    }
+                    
+                    i = 0;
+                    j = 0;
+                    
+                    lines.push_back(ligne);
+                    break;
+                }
+            }
+        }
+    }
+    return lines;
+}
+
+
+vector<Vec4i> deleteLineMin ( vector<Vec4i> lines) {
+    int fontFace = FONT_HERSHEY_COMPLEX_SMALL;
+    double fontScale=3.5;
+    int cpt = 0;
+    int largeur = 200;
+    int x0a, y0a, x1a, y1a, x0b, y0b, x1b, y1b;
+    
+    // Suppression des lignes proches
+    for( size_t i = 0; i < lines.size(); i++ )
+    {
+        x0a = lines[i][0];
+        y0a = lines[i][1];
+        x1a = lines[i][2];
+        y1a = lines[i][3];
+        for( size_t j = 0; j < lines.size(); j++ )
+        {
+            if( i != j) {
+                x0b = lines[j][0];
+                y0b = lines[j][1];
+                x1b = lines[j][2];
+                y1b = lines[j][3];
+                
+                // Horizontale
+                if( (x0b >= x0a && x1b <= x1a) && estCompris(y0a, y0b, largeur) && estCompris(y1a, y1b, largeur)) {
+                    cpt ++;
+                    putText(image2, to_string(cpt), Point(x0b,y0b),fontFace,fontScale,Scalar(10,10,255));
+                    
+                    line( image2, Point(x0b, y0b), Point(x1b, y1b), Scalar(127,255,200), 3, 8 );
+                    
+                    lines.erase(lines.begin() + j);
+
+                    j--;
+                    if(j<=i) {
+                        i--;
+                    }
+                    
+                    continue;
+                }
+            }
+        }
+    }
+    return lines;
+}
+
+
+
+
+vector<Vec4i> mixAlignedLines ( vector<Vec4i> lines) {
+    
+    int fontFace = FONT_HERSHEY_COMPLEX_SMALL;
+    double fontScale=3.5;
+    int cpt = 0;
+    int largeur = 50;
+    int espace = 200;
+    int x0a, y0a, x1a, y1a, x0b, y0b, x1b, y1b;
+    
+    for( size_t i = 0; i < lines.size(); i++ )
+    {
+        x0a = lines[i][0];
+        y0a = lines[i][1];
+        x1a = lines[i][2];
+        y1a = lines[i][3];
+        for( size_t j = 0; j < lines.size(); j++ ) {
+            
+            if( i != j) {
+                x0b = lines[j][0];
+                y0b = lines[j][1];
+                x1b = lines[j][2];
+                y1b = lines[j][3];
+                
+                //Horizontale
+                if( (x0b >= x1a && x0b <= x1a + espace && x1b >= x1a) && estCompris(y0a, y1b, largeur) && estCompris(y1a, y0b, largeur)) {
+                    
+                    cpt ++;
+                    putText(image2, to_string(cpt), Point(x0b,y0b),fontFace,fontScale,Scalar(10,50,255));
+                    
+                    Vec4i ligne;
+                    ligne[0] = x0a;    //x0
+                    ligne[1] = y0a;    //y0
+                    ligne[2] = x1b;    //x1
+                    ligne[3] = y1a;    //y1
+                    
+                    line( image2, Point(x0a, y0a), Point(x1a, y1a), Scalar(127,255,100), 3, 8 );
+                    line( image2, Point(x0b, y0b), Point(x1b, y1b), Scalar(127,255,100), 3, 8 );
+                    
+                    if(i > j) {
+                        lines.erase(lines.begin() + i);
+                        lines.erase(lines.begin() + j);
+                    } else {
+                        lines.erase(lines.begin() + j);
+                        lines.erase(lines.begin() + i);
+                    }
+                    
+                    i = 0;
+                    j = 0;
+                    
+                    lines.push_back(ligne);
+                    break;
+                }
+                
+                //Verticale
+                if( (y0b >= y1a && y0b <= y1a + espace && y1b >= y1a) && estCompris(x0a, x1b, largeur) && estCompris(x1a, x0b, largeur)) {
+                    
+                    cpt ++;
+                    putText(image2, to_string(cpt), Point(x0b,y0b),fontFace,fontScale,Scalar(10,50,255));
+                    
+                    Vec4i ligne;
+                    ligne[0] = x0a;    //x0
+                    ligne[1] = y0a;    //y0
+                    ligne[2] = x0a;    //x1
+                    ligne[3] = y1b;    //y1
+                    
+                    line( image2, Point(x0a, y0a), Point(x1a, y1a), Scalar(127,255,100), 3, 8 );
+                    line( image2, Point(x0b, y0b), Point(x1b, y1b), Scalar(127,255,100), 3, 8 );
+                    
+                    if(i > j) {
+                        lines.erase(lines.begin() + i);
+                        lines.erase(lines.begin() + j);
+                    } else {
+                        lines.erase(lines.begin() + j);
+                        lines.erase(lines.begin() + i);
+                    }
+                    
+                    i = 0;
+                    j = 0;
+                    
+                    lines.push_back(ligne);
+                    break;
+                }
+            }
+        }
+    }
+    return lines;
+}
 
 void findWalls(Mat src) {
     
@@ -253,36 +510,44 @@ void findWalls(Mat src) {
             l.push_back(lines[i]);
         }
     }
-    Mat image2 = image_walls.clone();
-    vector<Vec4i> vec;
-    // Suppression des lignes proches
-    for( size_t i = 0; i < l.size(); i++ )
-    {
-        for( size_t j = 0; j < l.size(); j++ )
-        {
-            if(i != j && equalLines(l[i], l[j])) {
-                line( image2, Point(l[i][0], l[i][1]),
-                     Point(l[i][2], l[i][3]), Scalar(127,255,127), 5, 8 );
-                line( image2, Point(l[j][0], l[j][1]),
-                     Point(l[j][2], l[j][3]), Scalar(0,0,255), 3, 8 );
-                l.erase(l.begin() + j);
-                cout << "suppression lines.." << endl;
-            }
-        }
-    }
-
-    //Dessin des lignes
+    
+    l = normalizedLines(l);
+    
+    image2 = image_walls.clone();
+    
+    l = mixLines(l);
+    
+    l = deleteLineMin(l);
+    
+    l = mixAlignedLines(l);
+    
+    l = mixLines(l);
+    
+    l = mixAlignedLines(l);
+    
     for( size_t i = 0; i < l.size(); i++ ) {
         line( image_walls, Point(l[i][0], l[i][1]),
-             Point(l[i][2], l[i][3]), Scalar(255,255,0), 3, 8 );
+             Point(l[i][2], l[i][3]), Scalar(255,0,127), 3, 8 );
+        line( image_walls, Point(l[i][0], l[i][1]),
+             Point(l[i][0], l[i][1]), Scalar(0,0,255), 10, 8 );
     }
-    
+
+    /*
+    //Dessin des lignes
+    for( size_t i = 0; i < l.size(); i++ ) {
+        line( image_walls, Point(finale[i][0], finale[i][1]),
+             Point(finale[i][2], finale[i][3]), Scalar(255,255,0), 3, 8 );
+        line( image_walls, Point(finale[i][0], finale[i][1]),
+             Point(finale[i][0], finale[i][1]), Scalar(0,0,200), 10, 8 );
+    }
+    */
+    /*
     //Dessin des lignes supprime
     for( size_t i = 0; i < vec.size(); i++ ) {
         line( image2, Point(l[i][0], l[i][1]),
              Point(l[i][2], l[i][3]), Scalar(127,255,127), 3, 8 );
     }
-    
+    */
     namedWindow("Walls2", 0);
     imshow( "Walls2", image2 );
     resizeWindow("Walls2", 1300, 900);
@@ -355,7 +620,7 @@ int main( int argc, char **argv ) {
     resizeWindow("Walls", 1300, 900);
     moveWindow("Walls", 30, 30);
     
-    
+    setMouseCallback("Walls",onMouse);
     
     //createTrackbar( "Seuil : ", "Rectangle", &treshold_value, 255, Contour );
     
