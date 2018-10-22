@@ -56,6 +56,7 @@ int valeurChangement = 5;
 ///
 int etatMouvement = 0;
 int direction = 4;
+int lastDirection = 4;
 
 float bouleX = 0.;
 float bouleY = 0.;
@@ -78,6 +79,20 @@ double Xmin, Ymin;
 
 //Fonctions PROTOTYPES
 void remplissageCoordMur();
+
+void affichePVector(vector<Point2f> *v);
+void afficheFVector(vector<float> *v);
+
+vector<Point2f> vectPointcopy(vector<Point2f> vect);
+vector<float> vectCopy(vector<float> vect);
+void initEquDroites ();
+
+
+void def_casCollision(int parallele);
+
+bool findIfIn (Point2f p);
+
+
 void def_axes(void);
 
 void def_carre(void);
@@ -90,7 +105,11 @@ void MouvementM(float M[16], int valaxe, float distance);
 
 void changerEtat();
 bool estChanger();
-int donnerCas(int cas);
+
+int casCollision = 4;
+void setCasCollision(int c);
+
+void donnerCas(int cas);
 bool collisionMurs(int cas);
 int checkSigne(int axis);
 

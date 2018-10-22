@@ -34,8 +34,7 @@ void remplissageCoordMur(){
 //    murCoordX.push_back(-LONGUEUR*1./2.);
 //    murCoordY.push_back(-SECTION*1./2.);
 //
-//    bouleX =-0.3-SECTION/2.;
-//    bouleY =-0.3+SECTION/2.;
+
 //
 //    cout << "MUR COORD X" << endl;
 //    vector <float>::const_iterator i;
@@ -70,17 +69,40 @@ void remplissageCoordMur(){
 //        cout<<(*j).x << " ET " << (*j).y <<endl;
 //    }
     
+  
+//    bouleX =-0.3-SECTION/2.;
+//    bouleY =-0.3+SECTION/2.;
     
     A.push_back(Point2f(-LONGUEUR*1./2.,SECTION*1./2.));
     B.push_back(Point2f(LONGUEUR*1./2.,SECTION*1./2.));
+    
     A.push_back(Point2f(LONGUEUR*1./2.,SECTION*1./2.));
     B.push_back(Point2f(LONGUEUR*1./2.,-SECTION*1./2.));
+    
     A.push_back(Point2f(LONGUEUR*1./2.,-SECTION*1./2.));
     B.push_back(Point2f(-LONGUEUR*1./2.,-SECTION*1./2.));
+    
     A.push_back(Point2f(-LONGUEUR*1./2.,-SECTION*1./2.));
     B.push_back(Point2f(-LONGUEUR*1./2.,SECTION*1./2.));
     
+    cout << "A" <<endl;
+    affichePVector(&A);
+    cout << "B" <<endl;
+    affichePVector(&B);
+    
+    initEquDroites();
 
+}
+
+void affichePVector( vector<Point2f> * v){
+    for (int i=0; i<v->size(); i++)
+        cout << v->at(i) << endl;
+}
+
+
+void afficheFVector( vector<float> * v){
+    for (int i=0; i<v->size(); i++)
+        cout << v->at(i) << endl;
 }
 
 vector<Point2f> vectPointcopy(vector<Point2f> vect){
@@ -109,41 +131,116 @@ void initEquDroites (){
     vector<Point2f> tmpA = vectPointcopy(A);
     vector<Point2f> tmpB = vectPointcopy(B);
    
+//    cout << "tmpA taille " << tmpA.size() << endl;
+//    affichePVector(&tmpA);
+//    cout << "tmpB" << tmpB.size() <<  endl;
+//    affichePVector(&tmpB);
     
-    for (int i=0; i<tmpA.size(); i++){
+    
+    for (int i=0; i<A.size(); i++){
         Point2f ptDep = tmpA.back();
         tmpA.pop_back();
+        
+        //cout << "tmpA" << endl;
+        cout << "Tour : " << i << " DEPART " << ptDep << endl;
+        //affichePVector(&tmpA);
+        
         Point2f ptArr = tmpB.back();
         tmpB.pop_back();
         
-        tmpCoeff = ((ptArr.y-ptDep.y)/(ptArr.x-ptDep.x));
-        tmpConstK = (ptDep.y)-(tmpCoeff*(ptDep.x));
+        //cout << "tmpB" << endl;
+        cout << "Tour : " << i << " ARRIVEE " << ptArr << endl <<endl;;
+        //affichePVector(&tmpB);
         
+        if((ptArr.x-ptDep.x) == 0){
+            tmpCoeff = 9999;
+            tmpConstK = (ptDep.x);
+        }else{
+            tmpCoeff = ((ptArr.y-ptDep.y)/(ptArr.x-ptDep.x));
+            tmpConstK = (ptDep.y)-(tmpCoeff*(ptDep.x));
+        }
         coeffDirecteur.push_back(tmpCoeff);
         constK.push_back(tmpConstK);
     }
+    cout << "CoeffDirecteur" <<endl;
+    afficheFVector(&coeffDirecteur);
+    cout << "ConstK" <<endl;
+    afficheFVector(&constK);
+}
+
+void def_casCollision(int parallele){
+    
+    if (parallele != 9999) {//parallele a x, cas 2(va vers le haut) et cas 3 (vers le bas)
+        if(lastDirection == 2)
+            setCasCollision(2);
+        else if(lastDirection == 3)
+            setCasCollision(3);
+    }else if (parallele == 9999){ //parallele a y, cas 0(vers gauche) et cas 1 (vers droite)
+        if (lastDirection == 0)
+            setCasCollision(0);
+        else if (lastDirection == 1)
+            setCasCollision(1);
+   }
 }
 
 bool findIfIn (Point2f p){ //ou Point
     
     //equation y = coeff * x + k
-    
+    cout << endl << "findIfIn" << endl << endl;
     vector<float> tmpCoeff = vectCopy(coeffDirecteur);
     vector<float> tmpConstK = vectCopy(constK);
     float tmpEq = 0;
-    float delta = 0.4;
-    for (int i=0; i<tmpCoeff.size(); i++){
-        tmpEq = (tmpCoeff.back()) * p.x + (tmpConstK.back());
+    float delta = 0.3;
+    for (int i=0; i<A.size(); i++){
+        if(tmpCoeff.back() == 9999)
+            tmpEq = (tmpConstK.back());
+        else
+            tmpEq = ((tmpCoeff.back()) * p.x) + (tmpConstK.back());
+        cout << "TOUR : " << i << endl << " // tmpEq : " << tmpEq << " // P.x : " << p.x << " // P.y : " << p.y <<endl;
+        
+        if ( p.y <= tmpEq + delta && p.y >= tmpEq - delta && tmpCoeff.back() != 9999 ){ //parallele a x
+            cout << "TRUE" <<endl;
+            def_casCollision(tmpCoeff.back());
+            return true;
+        }
+        else if (tmpCoeff.back() == 9999){ // parallele a y
+            if ( p.x <= tmpEq + delta && p.x >= tmpEq - delta ){
+                cout << "TRUE" <<endl;
+                def_casCollision(9999);
+                return true;
+            }
+        }
+        
         tmpCoeff.pop_back();
         tmpConstK.pop_back();
-        if ( p.y <= tmpEq + delta && p.y >= tmpEq - delta )
-            return true;
+
+
     }
-    
-    
     return false;
 }
 
+void def_murfictif(){
+    // face rouge, de droite
+    //rotation de 90 selon l'axe des y et translation sur les x et z
+    glPushMatrix();
+    glColor3f(1.0, 0.0, 1.0);
+    glTranslatef(LONGUEUR/3.0, 0.0, 0.0);
+    //glRotatef(90, 0, 1, 0);
+    //glScalef(SECTION/3.,SECTION,SECTION);
+    //glScalef(SECTION,SECTION,SECTION/2.0);
+    //glScalef(LONGUEUR*a,SECTION,SECTION);
+    
+    glBegin(GL_POLYGON);
+        glVertex3f( 0.0 ,-1/2., 0.0);
+        glVertex3f( 0.0  ,1/2., 0.0);
+        glVertex3f( 0.0 ,1/2., -SECTION/4.);
+        glVertex3f( 0.0 ,-1/2., -SECTION/4.);
+    glEnd();
+    
+    
+    
+    glPopMatrix();
+}
 
 //Trace les axes, X rouge, Y Vert, Z Bleu
 void def_axes(void){
@@ -183,7 +280,7 @@ void def_boule(void){
     glPushMatrix();
         //float blanc[] = { 1.0F,1.0F,1.0F,1.0F };
         //glMaterialfv(GL_FRONT,GL_SPECULAR,blanc);
-        glColor3f(1.0, 1., 1.0);
+        glColor3f(0.5, 0.5, 0.0);
         glutSolidSphere(0.3,36,36);
     glPopMatrix();
     
@@ -222,8 +319,7 @@ void def_boite(void){
         glScalef(SECTION/2.,SECTION,SECTION);
         //glScalef(SECTION,SECTION,SECTION/2.0);
         //glScalef(LONGUEUR*a,SECTION,SECTION);
-    def_carre();
-
+        def_carre();
     glPopMatrix();
 
     // face jaune, de gauche
@@ -320,9 +416,14 @@ bool estChanger(){
     return false;
 }
 
-int donnerCas(int cas){
+
+void setCasCollision(int c){
+    casCollision = c;
+}
+
+void donnerCas(int cas){
+    lastDirection = direction;
     direction = cas;
-    return direction;
 }
 
 bool collisionMurs(int cas){
@@ -343,12 +444,12 @@ bool collisionMurs(int cas){
 //            return true;
 //
 
-   
-    
+
     Point2f boule(bouleX,bouleY);
     if (findIfIn(boule))
-        return true;
-    
+        if( cas == casCollision)
+            
+            return true;
     
     
 //    Point boule(bouleX,bouleY);
@@ -366,6 +467,7 @@ bool collisionMurs(int cas){
 //            return true;
 //        else if(find(murCoordY.begin(), murCoordY.end(), bouleY) != murCoordY.end())
 //            return true;
+    
     return false;
 }
 
@@ -423,7 +525,7 @@ void Timer(int value){
     
     //Axes : X rouge, Y Vert, - X, | Y
     if (value==0){ //Va vers la gauche // q
-        if(collisionMurs(0) == 0){ //tant que la boule est entre 0 et Longueur - 36
+        if(collisionMurs(0) == 0){
             MouvementM(M_boule,1,deplacementX * checkSigne(2));
             bouleX = bouleX + (deplacementX * checkSigne(2));
             valeurChangement = 5;
@@ -526,21 +628,23 @@ void clavier(unsigned char key, int x, int y){
 void dessinScene(){
     glPushMatrix();
         glMultMatrixf(M_plateau);
-        //glTranslatef(-3.0,-3.0,0.0);
-        //def_axes();
+        glTranslatef(-3.0,-3.0,0.0);
+        def_axes();
     glPopMatrix();
     
     glPushMatrix();
         glMultMatrixf(M_plateau);
         def_plateau();
-        //def_boite();
-        //glRotatef(-90,0,1,0);
+        def_boite();
+        def_murfictif();
+        glRotatef(-90,0,1,0);
     glPopMatrix();
     
     glPushMatrix();
     //
     glMultMatrixf(M_plateau);
-        glTranslatef(-0.3-SECTION/2., -0.3+SECTION/2., 0.3-SECTION/4.0);
+        //glTranslatef(-0.3-SECTION/2., -0.3+SECTION/2., 0.3-SECTION/4.);
+        glTranslatef(0., 0., 0.3-SECTION/4.);
         glMultMatrixf(M_boule);
         def_boule();
     glPopMatrix();
@@ -601,7 +705,10 @@ void init(){
     
     //Creation de la premiere fenetre
     glutCreateWindow("3Dedale");
+    
     remplissageCoordMur();
+    
+    
     //Association des callback
     glutDisplayFunc(affichage);
     glutReshapeFunc(redim);
