@@ -53,6 +53,7 @@ void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
 
         //face gauche
         glBegin(GL_POLYGON);
+            glNormal3f(-1.0,0.0,0.0);
             glVertex3f(A.x-(epaisseur/2), A.y, 0);
             glVertex3f(B.x-(epaisseur/2), B.y, 0);
             glVertex3f(B.x-(epaisseur/2), B.y, hauteur);
@@ -60,6 +61,7 @@ void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
         glEnd();
         //face droite
         glBegin(GL_POLYGON);
+            glNormal3f(1.0,0.0,0.0);
             glVertex3f(A.x+(epaisseur/2), A.y, 0);
             glVertex3f(B.x+(epaisseur/2), B.y, 0);
             glVertex3f(B.x+(epaisseur/2), B.y, hauteur);
@@ -67,6 +69,7 @@ void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
         glEnd();
         //face de dessus
         glBegin(GL_POLYGON);
+            glNormal3f(0,0,1.0);
             glVertex3f(A.x-(epaisseur/2), A.y, hauteur);
             glVertex3f(A.x+(epaisseur/2), A.y, hauteur);
             glVertex3f(B.x-(epaisseur/2), B.y, hauteur);
@@ -74,6 +77,7 @@ void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
         glEnd();
         //face avant
         glBegin(GL_POLYGON);
+            glNormal3f(0,1.0,0.0);
             glVertex3f(A.x-(epaisseur/2), A.y, 0);
             glVertex3f(A.x-(epaisseur/2), A.y, hauteur);
             glVertex3f(A.x+(epaisseur/2), A.y, hauteur);
@@ -81,6 +85,7 @@ void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
         glEnd();
         //face arriere
         glBegin(GL_POLYGON);
+            glNormal3f(0,-1.0,0.0);
             glVertex3f(B.x-(epaisseur/2), B.y,0);
             glVertex3f(B.x-(epaisseur/2), B.y,hauteur);
             glVertex3f(B.x+(epaisseur/2), B.y,hauteur);
@@ -91,6 +96,7 @@ void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
 
         // face avant
         glBegin(GL_POLYGON);
+            glNormal3f(0,1.0,0.0);
             glVertex3f(A.x, A.y-(epaisseur/2), 0);
             glVertex3f(B.x, B.y-(epaisseur/2), 0);
             glVertex3f(B.x, B.y-(epaisseur/2), hauteur);
@@ -98,6 +104,7 @@ void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
         glEnd();
         // face arriere
         glBegin(GL_POLYGON);
+            glNormal3f(0,-1.0,0.0);
             glVertex3f(A.x, A.y+(epaisseur/2), 0);
             glVertex3f(B.x, B.y+(epaisseur/2), 0);
             glVertex3f(B.x, B.y+(epaisseur/2), hauteur);
@@ -105,6 +112,7 @@ void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
         glEnd();
         // face de dessus
         glBegin(GL_POLYGON);
+            glNormal3f(0,0.0,1.0);
             glVertex3f(A.x, A.y-(epaisseur/2),hauteur);
             glVertex3f(A.x, B.y-(epaisseur/2),hauteur);
             glVertex3f(A.x, B.y+(epaisseur/2),hauteur);
@@ -112,6 +120,7 @@ void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
         glEnd();
         //face gauche
         glBegin(GL_POLYGON);
+            glNormal3f(-1.0,0.0,0.0);
             glVertex3f(A.x, A.y-(epaisseur/2),0);
             glVertex3f(A.x, A.y+(epaisseur/2),hauteur);
             glVertex3f(A.x, A.y+(epaisseur/2),hauteur);
@@ -119,6 +128,7 @@ void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
         glEnd();
         //face droite
         glBegin(GL_POLYGON);
+           glNormal3f(1.0,0.0,0.0);
            glVertex3f(B.x, B.y-(epaisseur/2),0);
            glVertex3f(B.x, B.y+(epaisseur/2),hauteur);
            glVertex3f(B.x, B.y+(epaisseur/2),hauteur);
