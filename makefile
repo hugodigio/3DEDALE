@@ -8,11 +8,14 @@ endif
 
 all : Projet
  
-3dedale: 3dedale.cpp
-	$(CXX) -c 3dedale.cpp $(INC)
+camera: src/detection/camera.cpp
+	$(CXX) -c src/detection/camera.cpp $(INC)
+
+wallsDetector: src/detection/walls_detector.cpp
+	$(CXX) -c src/detection/walls_detector.cpp $(INC)
  
-Projet: 3dedale
-	$(CXX) -o Projet 3dedale.o $(OSX_LIBS) $(OPENCV_LIBS) $(GLFW_LIBS)
+Projet: camera wallsDetector
+	$(CXX) -o Projet camera.o walls_detector.o $(OSX_LIBS) $(OPENCV_LIBS) $(GLFW_LIBS)
 	rm *.o
 	
 clean :

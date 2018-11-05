@@ -4,6 +4,9 @@
 #include <iostream>
 #include <vector>
 
+#include "camera.hpp"
+#include "walls_detector.hpp"
+
 using namespace std;
 using namespace cv;
 using std::vector;
@@ -218,6 +221,11 @@ void detection() {
 	p.y = y_init + height_init;
 	points_initiaux.push_back(p);
 	
+	Mat gray;
+	cvtColor(frame, gray, CV_BGR2GRAY);
+	findWalls(gray);
+	
+	cout << x_init << " " << y_init << " " << x_init + width_init << " " << y_init + height_init << endl;
 }
 
 
@@ -247,6 +255,11 @@ void tracking() {
     {     
 		Mat frame = getImage();
 		flip(frame, frame, 1);
+		
+		//code raph le bg <3
+		Mat gray;
+		cvtColor(frame, gray, CV_BGR2GRAY);
+		findWalls(gray);
 		
 		bool ok = multiTracker->update(frame);
 	    
@@ -306,14 +319,16 @@ void tracking() {
 			
 		}
 		homography = findHomography(points_finaux, points_initiaux, CV_RANSAC);
-		imshow("Camera", frame);
+		//imshow("Camera", frame);
+		
+		
 	   
 		if  (waitKey(1) == 27) break;
 	 
 		}
 	
 }
-
+/*
 void afficherCercle() {
 	
 	Mat image_circle;
@@ -395,7 +410,7 @@ void afficherTriangle() {
 		if  (waitKey(1) == 27) break;
 	}
 }
-
+*/
 
 int main( int argc, char* argv[] ){
 	
@@ -409,13 +424,14 @@ int main( int argc, char* argv[] ){
 	detection();
 	
 	/* PARTIE TRACKING*/
-	tracking();
+	//tracking();
 	
 	//afficherCercle();
 	//afficherTriangle();
 	
 	closeCamera();
-		
+	
+	waitKey(0);
 	cvDestroyWindow("Camera");
 	return 0;
 }
