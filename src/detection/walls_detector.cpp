@@ -35,6 +35,7 @@ int cpt_frame = 0;
 
 
 vector<Vec4i> lines;
+vector<Vec4i> l;
 
 //Si a est compris dans l'interface [b +- inter]
 bool compris(int a, int b, int inter) {
@@ -84,100 +85,104 @@ void normalizedLines () {
     
     int x0, y0, x1, y1;
     
-    for( size_t i = 0; i < lines.size(); i++ ) {
+    for( size_t i = 0; i < l.size(); i++ ) {
         
-        x0 = lines[i][0];
-        y0 = lines[i][1];
-        x1 = lines[i][2];
-        y1 = lines[i][3];
+        x0 = l[i][0];
+        y0 = l[i][1];
+        x1 = l[i][2];
+        y1 = l[i][3];
         
         if(y0 > y1 + 100) {
-            lines[i][0] = x1;
-            lines[i][1] = y1;
-            lines[i][2] = x0;
-            lines[i][3] = y0;
+            l[i][0] = x1;
+            l[i][1] = y1;
+            l[i][2] = x0;
+            l[i][3] = y0;
         }
     }
 }
 
+/**   -------
+ * 		--------
+ * 
+ * */
 bool mixLines () {
     
     int fontFace = FONT_HERSHEY_COMPLEX_SMALL;
     double fontScale=3.5;
     int cpt = 0;
-    int largeur = 50;
+    int espacement = 15;
     int x0a, y0a, x1a, y1a, x0b, y0b, x1b, y1b;
     bool changement = false;
     
-    for( size_t i = 0; i < lines.size(); i++ )
+    for( size_t i = 0; i < l.size(); i++ )
     {
-        x0a = lines[i][0];
-        y0a = lines[i][1];
-        x1a = lines[i][2];
-        y1a = lines[i][3];
-        for( size_t j = 0; j < lines.size(); j++ ) {
+        x0a = l[i][0];
+        y0a = l[i][1];
+        x1a = l[i][2];
+        y1a = l[i][3];
+        for( size_t j = 0; j < l.size(); j++ ) {
             
             if( i != j) {
-                x0b = lines[j][0];
-                y0b = lines[j][1];
-                x1b = lines[j][2];
-                y1b = lines[j][3];
+                x0b = l[j][0];
+                y0b = l[j][1];
+                x1b = l[j][2];
+                y1b = l[j][3];
                 
                 //Horizontale
-                if( (x0b >= x0a && x0b <= x1a && x1b >= x1a) && estCompris(y0a, y0b, largeur) && estCompris(y1a, y1b, largeur)) {
+                if( (x0b >= x0a && x0b <= x1a && x1b >= x1a) && estCompris(y0a, y0b, espacement) && estCompris(y1a, y1b, espacement)) {
                     
                     cpt ++;
                     
                     Vec4i ligne;
-                    ligne[0] = x0a;    //x0
-                    ligne[1] = y0a;    //y0
-                    ligne[2] = x1b;    //x1
-                    ligne[3] = y1a;    //y1
+                    ligne[0] = x0a;    			//x0
+                    ligne[1] = (y0a+y0b)/2;    	//y0
+                    ligne[2] = x1b;    			//x1
+                    ligne[3] = (y1a+y1b)/2;    	//y1
                     
                     line( image2, Point(x0a, y0a), Point(x1a, y1a), Scalar(127,255,100), 3, 8 );
                     line( image2, Point(x0b, y0b), Point(x1b, y1b), Scalar(127,255,100), 3, 8 );
                     
                     if(i > j) {
-                        lines.erase(lines.begin() + i);
-                        lines.erase(lines.begin() + j);
+                        l.erase(l.begin() + i);
+                        l.erase(l.begin() + j);
                     } else {
-                        lines.erase(lines.begin() + j);
-                        lines.erase(lines.begin() + i);
+                        l.erase(l.begin() + j);
+                        l.erase(l.begin() + i);
                     }
                     
                     i = 0;
                     j = 0;
                     changement = true;
-                    lines.push_back(ligne);
+                    l.push_back(ligne);
                     break;
                 }
                 
                 //Verticale
-                if( (y0b >= y0a && y0b <= y1a && y1b >= y1a) && estCompris(x0a, x0b, largeur) && estCompris(x1a, x1b, largeur)) {
+                if( (y0b >= y0a && y0b <= y1a && y1b >= y1a) && estCompris(x0a, x0b, espacement) && estCompris(x1a, x1b, espacement)) {
                     
                     cpt ++;
                     
                     Vec4i ligne;
-                    ligne[0] = x0a;    //x0
-                    ligne[1] = y0a;    //y0
-                    ligne[2] = x1a;    //x1
-                    ligne[3] = y1b;    //y1
+                    ligne[0] = (x0a+x0b)/2;    	//x0
+                    ligne[1] = y0a;    			//y0
+                    ligne[2] = (x1a+x1b)/2;    	//x1
+                    ligne[3] = y1b;    			//y1
                     
                     line( image2, Point(x0a, y0a), Point(x1a, y1a), Scalar(127,255,100), 3, 8 );
                     line( image2, Point(x0b, y0b), Point(x1b, y1b), Scalar(127,255,100), 3, 8 );
                     
                     if(i > j) {
-                        lines.erase(lines.begin() + i);
-                        lines.erase(lines.begin() + j);
+                        l.erase(l.begin() + i);
+                        l.erase(l.begin() + j);
                     } else {
-                        lines.erase(lines.begin() + j);
-                        lines.erase(lines.begin() + i);
+                        l.erase(l.begin() + j);
+                        l.erase(l.begin() + i);
                     }
                     
                     i = 0;
                     j = 0;
                     changement = true;
-                    lines.push_back(ligne);
+                    l.push_back(ligne);
                     break;
                 }
             }
@@ -187,37 +192,44 @@ bool mixLines () {
 }
 
 
+
+
+/** 
+ *  ----------
+ * 		----
+ * 
+ * */
 bool deleteLineMin () {
     int fontFace = FONT_HERSHEY_COMPLEX_SMALL;
     double fontScale=3.5;
     int cpt = 0;
-    int largeur = 50;
+    int espacement = 15;
     int x0a, y0a, x1a, y1a, x0b, y0b, x1b, y1b;
     
     bool changement = false;
     
     // Suppression des lignes proches
-    for( size_t i = 0; i < lines.size(); i++ )
+    for( size_t i = 0; i < l.size(); i++ )
     {
-        x0a = lines[i][0];
-        y0a = lines[i][1];
-        x1a = lines[i][2];
-        y1a = lines[i][3];
-        for( size_t j = 0; j < lines.size(); j++ )
+        x0a = l[i][0];
+        y0a = l[i][1];
+        x1a = l[i][2];
+        y1a = l[i][3];
+        for( size_t j = 0; j < l.size(); j++ )
         {
             if( i != j) {
-                x0b = lines[j][0];
-                y0b = lines[j][1];
-                x1b = lines[j][2];
-                y1b = lines[j][3];
+                x0b = l[j][0];
+                y0b = l[j][1];
+                x1b = l[j][2];
+                y1b = l[j][3];
                 
                 // Horizontale
-                if( (x0b >= x0a && x1b <= x1a) && estCompris(y0a, y0b, largeur) && estCompris(y1a, y1b, largeur)) {
+                if( (x0b >= x0a && x1b <= x1a) && estCompris(y0a, y0b, espacement) && estCompris(y1a, y1b, espacement)) {
                     cpt ++;
                     
                     line( image2, Point(x0b, y0b), Point(x1b, y1b), Scalar(127,255,200), 3, 8 );
                     
-                    lines.erase(lines.begin() + j);
+                    l.erase(l.begin() + j);
 
                     j--;
                     if(j<=i) {
@@ -232,87 +244,93 @@ bool deleteLineMin () {
     return changement;
 }
 
+
+
+/**
+ * -----  --- = --------
+ * 
+ * */
 bool mixAlignedLines () {
     
     int fontFace = FONT_HERSHEY_COMPLEX_SMALL;
     double fontScale=3.5;
     int cpt = 0;
-    int largeur = 50; //espacement entre 2 lignes
-    int espace = 100;
+    int espacement = 15; //espacement entre 2 lignes
+    int espace = 150; //espace entre fin d'une ligne et debut d'une autre
     int x0a, y0a, x1a, y1a, x0b, y0b, x1b, y1b;
     bool changement = false;
     
-    for( size_t i = 0; i < lines.size(); i++ )
+    for( size_t i = 0; i < l.size(); i++ )
     {
-        x0a = lines[i][0];
-        y0a = lines[i][1];
-        x1a = lines[i][2];
-        y1a = lines[i][3];
-        for( size_t j = 0; j < lines.size(); j++ ) {
+        x0a = l[i][0];
+        y0a = l[i][1];
+        x1a = l[i][2];
+        y1a = l[i][3];
+        for( size_t j = 0; j < l.size(); j++ ) {
             
             if( i != j) {
-                x0b = lines[j][0];
-                y0b = lines[j][1];
-                x1b = lines[j][2];
-                y1b = lines[j][3];
+                x0b = l[j][0];
+                y0b = l[j][1];
+                x1b = l[j][2];
+                y1b = l[j][3];
                 
                 //Horizontale
-                if( (x0b >= x1a && x0b <= x1a + espace && x1b >= x1a) && estCompris(y0a, y1b, largeur) && estCompris(y1a, y0b, largeur)) {
+                if( (x0b >= x1a && x0b <= x1a + espace && x1b >= x1a) && estCompris(y0a, y0b, espacement) && estCompris(y1a, y1b, espacement)) {
                     
                     cpt ++;
                    
                     Vec4i ligne;
-                    ligne[0] = x0a;    //x0
-                    ligne[1] = y0a;    //y0
-                    ligne[2] = x1b;    //x1
-                    ligne[3] = y1a;    //y1
+                    ligne[0] = x0a;    			//x0
+                    ligne[1] = (y0a+y0b)/2;    	//y0
+                    ligne[2] = x1b;    			//x1
+                    ligne[3] = (y1a+y1b)/2;    	//y1
                     
                     line( image2, Point(x0a, y0a), Point(x1a, y1a), Scalar(127,255,100), 3, 8 );
                     line( image2, Point(x0b, y0b), Point(x1b, y1b), Scalar(127,255,100), 3, 8 );
                     
                     if(i > j) {
-                        lines.erase(lines.begin() + i);
-                        lines.erase(lines.begin() + j);
+                        l.erase(l.begin() + i);
+                        l.erase(l.begin() + j);
                     } else {
-                        lines.erase(lines.begin() + j);
-                        lines.erase(lines.begin() + i);
+                        l.erase(l.begin() + j);
+                        l.erase(l.begin() + i);
                     }
                     
                     i = 0;
                     j = 0;
                     
                     changement = true;
-                    lines.push_back(ligne);
+                    l.push_back(ligne);
                     break;
                 }
                 
                 //Verticale
-                if( (y0b >= y1a && y0b <= y1a + espace && y1b >= y1a) && estCompris(x0a, x1b, largeur) && estCompris(x1a, x0b, largeur)) {
+                if( (y0b >= y1a && y0b <= y1a + espace && y1b >= y1a) && estCompris(x0a, x0b, espacement) && estCompris(x1a, x1b, espacement)) {
                     
                     cpt ++;
                    
                     Vec4i ligne;
-                    ligne[0] = x0a;    //x0
-                    ligne[1] = y0a;    //y0
-                    ligne[2] = x0a;    //x1
-                    ligne[3] = y1b;    //y1
+                    ligne[0] = (x0a+x0b)/2;    	//x0
+                    ligne[1] = y0a;    			//y0
+                    ligne[2] = (x1a+x1b)/2;    	//x1
+                    ligne[3] = y1b;    			//y1
                     
                     line( image2, Point(x0a, y0a), Point(x1a, y1a), Scalar(127,255,100), 3, 8 );
                     line( image2, Point(x0b, y0b), Point(x1b, y1b), Scalar(127,255,100), 3, 8 );
                     
                     if(i > j) {
-                        lines.erase(lines.begin() + i);
-                        lines.erase(lines.begin() + j);
+                        l.erase(l.begin() + i);
+                        l.erase(l.begin() + j);
                     } else {
-                        lines.erase(lines.begin() + j);
-                        lines.erase(lines.begin() + i);
+                        l.erase(l.begin() + j);
+                        l.erase(l.begin() + i);
                     }
                     
                     i = 0;
                     j = 0;
                     
                     changement = true;
-                    lines.push_back(ligne);
+                    l.push_back(ligne);
                     break;
                 }
             }
@@ -321,26 +339,12 @@ bool mixAlignedLines () {
     return changement;
 }
 
-void findWalls(Mat src) {
-    //src est en niveaux de gris
-    Mat gray;
-    int precision = 20;
-    
-    morphologyEx( src, src, 2, getStructuringElement(MORPH_RECT, Size(7,7)) );
-    
-    image_walls = src.clone();
-    
-    cvtColor(image_walls, image_walls, CV_GRAY2BGR);
-    cvtColor(image_walls, gray, CV_BGR2GRAY);
-
-    medianBlur(gray, gray, 3);
-    Canny(gray, gray, 50, 150, 3);
-
-    vector<Vec4i> l;
-    
-    HoughLinesP( gray, lines, 1, CV_PI/180, 80, src.rows/20, src.rows/15);
-    
-    // On garde les lignes verticales et horizontales
+bool orthoLines() {
+	
+	int precision = 5; // precision de l'angle
+	bool changement = false;
+	
+	// On garde les lignes verticales et horizontales
     for( size_t i = 0; i < lines.size(); i++ )
     {
         // x1, y1, x2, y2
@@ -350,55 +354,62 @@ void findWalls(Mat src) {
             l.push_back(lines[i]);
         }
     }
-    
-    normalizedLines();
-    
-    image2 = image_walls.clone();
-    
-    bool continuer = mixLines();
-    
-    while(continuer) {
-		cout << "a" << endl;
-		continuer = mixLines();
-	}
-    
-    continuer = deleteLineMin();
-    
-    while(continuer) {
-		cout << "b" << endl;
-		continuer = deleteLineMin();
-	}
 	
-	
-	continuer = mixAlignedLines();
-    
-    while(continuer) {
-		cout << "c" << endl;
-		continuer = mixAlignedLines();
-	}
-	
-	mixLines();
-	mixAlignedLines();
-	mixLines();
-	mixAlignedLines();
-	mixLines();
-	mixAlignedLines();
-	mixLines();
-	mixAlignedLines();
+	return changement;
+}
 
+void findWalls(Mat src) {
+	
+	bool mix, min, align;
+	
+    //src est en niveaux de gris
+    Mat gray;
+    lines.clear();
+    l.clear();
+    
+    morphologyEx( src, src, 2, getStructuringElement(MORPH_RECT, Size(7,7)) );
+    
+    image_walls = src.clone();
+    
+    cvtColor(image_walls, image_walls, CV_GRAY2BGR);
+    cvtColor(image_walls, gray, CV_BGR2GRAY);
+    
+	image2 = image_walls.clone();
+	
+    medianBlur(gray, gray, 3);
+    Canny(gray, gray, 50, 150, 3);
+    HoughLinesP( gray, lines, 1, CV_PI/180, 80, src.rows/20, src.rows/15);
+    
+    orthoLines(); //On ne garde que les lignes orthogonales
+    
+    normalizedLines(); //Toutes les lignes dans le meme sens
+    
+    int cpt = 0;
+    
+    while(cpt < 10) {
+		mix = mixLines();
+		min = deleteLineMin();
+		align = mixAlignedLines();
+		
+		if(!mix && !min && !align) {
+			
+			break;
+		} else
+		cout << cpt++ << "/mix : " << mix << ", min : " << min << ", align : " << align << endl;
+
+	}
    
-    for( size_t i = 0; i < lines.size(); i++ ) {
-        line( image_walls, Point(lines[i][0], lines[i][1]),
-             Point(lines[i][2], lines[i][3]), Scalar(255,0,127), 3, 8 );
-        line( image_walls, Point(lines[i][0], lines[i][1]),
-             Point(lines[i][0], lines[i][1]), Scalar(0,0,255), 10, 8 );
+    for( size_t i = 0; i < l.size(); i++ ) {
+        line( image_walls, Point(l[i][0], l[i][1]),
+             Point(l[i][2], l[i][3]), Scalar(255,0,127), 3, 8 );
+        line( image_walls, Point(l[i][0], l[i][1]),
+             Point(l[i][0], l[i][1]), Scalar(0,0,255), 10, 8 );
     }
 
     namedWindow("Walls", 0);
     imshow( "Walls", image_walls );
     imshow( "Walls2", image2 );
     resizeWindow("Walls", 1300, 900);
-    cout << l.size() << endl;
 }
 
 /*
