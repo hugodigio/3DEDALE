@@ -203,7 +203,7 @@ bool deleteLineMin () {
     int fontFace = FONT_HERSHEY_COMPLEX_SMALL;
     double fontScale=3.5;
     int cpt = 0;
-    int espacement = 15;
+    int espacement = 30;
     int x0a, y0a, x1a, y1a, x0b, y0b, x1b, y1b;
     
     bool changement = false;
@@ -238,6 +238,22 @@ bool deleteLineMin () {
                     changement = true;
                     continue;
                 }
+                
+                // Verticale
+                if( (y0b >= y0a && y1b <= y1a) && estCompris(x0a, x0b, espacement) && estCompris(x1a, x1b, espacement)) {
+                    cpt ++;
+                    
+                    line( image2, Point(x0b, y0b), Point(x1b, y1b), Scalar(127,255,200), 3, 8 );
+                    
+                    l.erase(l.begin() + j);
+
+                    j--;
+                    if(j<=i) {
+                        i--;
+                    }
+                    changement = true;
+                    continue;
+                }
             }
         }
     }
@@ -256,12 +272,11 @@ bool mixAlignedLines () {
     double fontScale=3.5;
     int cpt = 0;
     int espacement = 15; //espacement entre 2 lignes
-    int espace = 150; //espace entre fin d'une ligne et debut d'une autre
+    int espace = 50; //espace entre fin d'une ligne et debut d'une autre
     int x0a, y0a, x1a, y1a, x0b, y0b, x1b, y1b;
     bool changement = false;
     
-    for( size_t i = 0; i < l.size(); i++ )
-    {
+    for( size_t i = 0; i < l.size(); i++ ) {
         x0a = l[i][0];
         y0a = l[i][1];
         x1a = l[i][2];
@@ -281,9 +296,11 @@ bool mixAlignedLines () {
                    
                     Vec4i ligne;
                     ligne[0] = x0a;    			//x0
-                    ligne[1] = (y0a+y0b)/2;    	//y0
+                    ligne[1] = y0a;    	//y0
                     ligne[2] = x1b;    			//x1
-                    ligne[3] = (y1a+y1b)/2;    	//y1
+                    ligne[3] = y1b;    	//y1
+                    
+                    cout << "DING" << ligne[0] << ", " << ligne[1] << ", " << ligne[2] << ", " << ligne[3] << endl;
                     
                     line( image2, Point(x0a, y0a), Point(x1a, y1a), Scalar(127,255,100), 3, 8 );
                     line( image2, Point(x0b, y0b), Point(x1b, y1b), Scalar(127,255,100), 3, 8 );
@@ -304,16 +321,19 @@ bool mixAlignedLines () {
                     break;
                 }
                 
+                //BUG ICI LIGNE DIAGONALE
                 //Verticale
                 if( (y0b >= y1a && y0b <= y1a + espace && y1b >= y1a) && estCompris(x0a, x0b, espacement) && estCompris(x1a, x1b, espacement)) {
-                    
+
                     cpt ++;
                    
                     Vec4i ligne;
-                    ligne[0] = (x0a+x0b)/2;    	//x0
+                    ligne[0] = x0a;    	//x0
                     ligne[1] = y0a;    			//y0
-                    ligne[2] = (x1a+x1b)/2;    	//x1
+                    ligne[2] = x1b;    	//x1
                     ligne[3] = y1b;    			//y1
+                    
+                    cout << "doong" << ligne[0] << ", " << ligne[1] << ", " << ligne[2] << ", " << ligne[3] << endl;
                     
                     line( image2, Point(x0a, y0a), Point(x1a, y1a), Scalar(127,255,100), 3, 8 );
                     line( image2, Point(x0b, y0b), Point(x1b, y1b), Scalar(127,255,100), 3, 8 );
@@ -390,13 +410,9 @@ void findWalls(Mat src) {
 		mix = mixLines();
 		min = deleteLineMin();
 		align = mixAlignedLines();
+		normalizedLines();
 		
-		if(!mix && !min && !align) {
-			
-			break;
-		} else
 		cout << cpt++ << "/mix : " << mix << ", min : " << min << ", align : " << align << endl;
-
 	}
    
     for( size_t i = 0; i < l.size(); i++ ) {
@@ -405,6 +421,10 @@ void findWalls(Mat src) {
         line( image_walls, Point(l[i][0], l[i][1]),
              Point(l[i][0], l[i][1]), Scalar(0,0,255), 10, 8 );
     }
+    
+	for( size_t i = 0; i < l.size(); i++ ) {
+		cout << l[i] << endl;
+	}
 
     namedWindow("Walls", 0);
     imshow( "Walls", image_walls );
