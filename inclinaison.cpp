@@ -35,16 +35,6 @@ using namespace std;
 cv::Mat image ;                                   //L'image chargé dans le terminal
 Mat rot_vec(3,1,cv::DataType<double>::type);      //Rotation estimée de la feuille
 Mat trans_vec(3,1,cv::DataType<double>::type);    //Translation estimée de la feuille (optionnel)
-GLsizei WIDTH = 400, HEIGHT = 400;                //Largeur et Hauteur de la fenetre
-GLfloat colors[][3] = { { 1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f }, {0.0f, 0.0f, 1.0f }, {0.0f, 0.0f, 0.0f },  {1.0f, 1.0f, 1.0f }  }; //Contient les couleurs que l'on veut utiliser en RGB
-//Index des couleurs
-int red = 0 ;
-int green = 1 ;
-int blue = 2 ;
-int black = 3 ;
-int white = 4 ;
-int cpt=0 ;
-int rotation_globale_y = 0 ; //Possibilité de faire tourner l'ensemble des objets sur l'axe y pour vérifier l'inclinaison
 //Les entrées du programme
 Point2f point_modele_1(250,100) ; //On leur donne des valeurs uniquement pour les tests
 Point2f point_modele_2(1030,100) ; 
@@ -160,5 +150,7 @@ int main( int argc, char **argv ) {
     //NB: rot_vec et trans_vec sont les résultats attendus par le programmme
     //Grâce à ces données relatives à la transformation géometrique actuelle,
     //on est capable de trouver l'axe Z de l'objet (=> plan incliné sur lequel figure le labirynthe).
+
+    //TODO : - Dessiner des lignes sur l'image test en entrée (feuille_inclinee.jpg)
 }
 
