@@ -18,6 +18,14 @@
 using namespace cv;
 using namespace std;
 
+//OBJECTIF : TROUVER L'AXE Z D'UN PLAN INCLINÉ (objet) PAR RAPPORT AU MODÈLE (scene) QUI LE CONTIENT
+//ENTRÉES : - 4 points représentant les extrémités du modèle
+//          - 4 points représentant les extrémités du plan incliné (sur lequel s'affiche le labyrinthe)
+//SORTIE : - 2 vecteurs (translation et rotation) relatifs à la transformation géométrique
+//           correspondant à l'inclinaison de la plan dans le modèle.
+//À partir de ces informations (notamment la rotation), on peut tracer l'axe Z image par image
+//(c.a.d. à chaque fois que les coordonnées du plan incliné changent)
+
 //compilation: make
 //test: ./inclinaison feuille_inclinee.jpg
 
@@ -53,7 +61,7 @@ void clavier(unsigned char key, int x, int y){
 
   switch (key) {
     case 'y': 
-      rotation_globale_y += 5 ; 
+      rotation_globale_y += 1 ; 
       rotation_globale_y = rotation_globale_y % 360 ;
       cout << rotation_globale_y << "\n" ;
       glutPostRedisplay();
@@ -79,15 +87,18 @@ void def_axes(){
 
 void affichage(void){
 
+  glClearColor(colors[black][0], colors[black][1], colors[black][2], 1.0f); //Couleur de fond en RGBA
+
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) ; //On efface le buffer d'ecran
   glEnable(GL_DEPTH_TEST) ; //On active le z-buffer
 
   glLoadIdentity() ;
 
-  glClearColor(colors[black][0], colors[black][1], colors[black][2], 1.0f); //Couleur de fond en RGBA
-
   glPushMatrix() ;
-    glRotatef(rotation_globale_y, 0, 1, 0) ;
+    glTranslatef(200, 150, 0) ;
+    glRotatef(rotation_globale_y, 0, 1, 0) ; //Rotation autour du centre des axes
+    glTranslatef(-200, -150, 0) ;
     //Rotation/Translation du repère
     glRotated(rot_vec.at<double>(0,0), 1, 0, 0) ; //Axe X
     glRotated(rot_vec.at<double>(1,0), 0, 1, 0) ; //Axe Y
@@ -100,7 +111,9 @@ void affichage(void){
   //Construction d'un rectangle blanc représentant la feuille
   glColor3f(colors[white][0], colors[white][1], colors[white][2]) ;
   glPushMatrix() ;
-    glRotatef(rotation_globale_y, 0, 1, 0) ;
+    glTranslatef(200, 150, 0) ;
+    glRotatef(rotation_globale_y, 0, 1, 0) ; //Rotation autour du centre des axes
+    glTranslatef(-200, -150, 0) ;
     //Rotation/Translation du repère
     glRotated(rot_vec.at<double>(0,0), 1, 0, 0) ; //Axe X
     glRotated(rot_vec.at<double>(1,0), 0, 1, 0) ; //Axe Y
@@ -114,9 +127,6 @@ void affichage(void){
         glVertex2f(100.0, 200.0);
     glEnd() ;
   glPopMatrix() ;
-
-  glFlush();
-
 
   glutSwapBuffers() ; //On indique ce qu'il faut afficher
 }
@@ -160,17 +170,20 @@ int main( int argc, char **argv ) {
 
 /*Calcul du vecteur de rotation représentant l'inclinaison de la feuille par rapport au modèle---------------------*/
 
-    //Les coordonnées des coins du modèle
-    Point2f point_modele_1(0,0) ;
-    Point2f point_modele_2(991,0) ;
-    Point2f point_modele_3(0,715) ;
-    Point2f point_modele_4(991,715) ;
+    //Les coordonnées des coins du modèle (!! Le cas présent est un exemple... !!)
+    Point2f point_modele_1(250,100) ;
+    Point2f point_modele_2(1030,100) ;
+    Point2f point_modele_3(250,620) ;
+    Point2f point_modele_4(1030,620) ;
 
-    //Les coordonnées des coins de la feuille inclinée
-    Point3f point_feuille_1(185,114,0) ;
-    Point3f point_feuille_2(799,149,0) ;
-    Point3f point_feuille_3(61,519,0) ;
-    Point3f point_feuille_4(977,501,0) ;
+    Point3f centre(780, 360, 0) ;
+
+    //Les coordonnées des coins de la feuille inclinée (!! Le cas présent est un exemple... !!)
+    Point3f point_feuille_1(250,360, -(520/2)) ;
+    Point3f point_feuille_2(1030,360,-(520/2)) ;
+    Point3f point_feuille_3(250,360,520/2) ;
+    Point3f point_feuille_4(1030,360,520/2) ;
+
 
     //Création de vecteurs de points
     std::vector<Point3f> obj; //Contient les points de la feuille
@@ -187,7 +200,16 @@ int main( int argc, char **argv ) {
 
     //Calcul de l'homographie (=> Inclinaison)
     cv::Mat cameraMatrix(3,3,cv::DataType<double>::type);
-    cv::setIdentity(cameraMatrix); //Valeur par défaut
+    //cv::setIdentity(cameraMatrix); //Valeur par défaut
+    cameraMatrix.at<double>(0,0) = 1030 ; //focale_x
+    cameraMatrix.at<double>(0,1) = 0 ; 
+    cameraMatrix.at<double>(0,2) = 780 ; //center_x
+    cameraMatrix.at<double>(1,0) = 0 ; 
+    cameraMatrix.at<double>(1,1) = 620 ; //focale_y
+    cameraMatrix.at<double>(1,2) = 360 ; //center_y
+    cameraMatrix.at<double>(2,0) = 0 ; 
+    cameraMatrix.at<double>(2,1) = 0 ; 
+    cameraMatrix.at<double>(2,2) = 1 ; 
 
     cv::Mat distCoeffs(4,1,cv::DataType<double>::type);
     distCoeffs.at<double>(0) = 0;
@@ -195,12 +217,14 @@ int main( int argc, char **argv ) {
     distCoeffs.at<double>(2) = 0;
     distCoeffs.at<double>(3) = 0; //Valeur par défaut
 
-    cv::solvePnP(obj, scene, cameraMatrix, distCoeffs, rot_vec, trans_vec);
+    cv::solvePnP(obj, scene, cameraMatrix, distCoeffs, rot_vec, trans_vec, true, CV_P3P);
 
     cout << rot_vec << "\n" ;
     cout << trans_vec << "\n" ;
 
-    //NB: rot_vec et trans_vec sont le résultat attendus par le programmme
+    //NB: rot_vec et trans_vec sont les résultats attendus par le programmme
+    //Grâce à ces données relatives à la transformation géometrique actuelle,
+    //on est capable de trouver l'axe Z de l'objet (=> plan incliné sur lequel figure le labirynthe).
     //La partie visualisation ci-dessous sert de vérification
 
 
