@@ -3,6 +3,7 @@
 #include <opencv2/core/ocl.hpp>
 #include <iostream>
 #include <vector>
+#include <ctime>
 
 #include "camera.hpp"
 #include "walls_detector.hpp"
@@ -41,6 +42,7 @@ Mat getImage () {
 	IplImage* frame;
 	frame = cvQueryFrame( capture );
 	Mat image = cvarrToMat(frame);
+	flip(image, image, 1);
 	return image;
 }
 
@@ -129,11 +131,11 @@ void detection() {
 	Mat image_tampon;
 	Mat temp;
 	Mat result;
-	
+
 	bool verif = false;
 	
 	double pourcentage = 0.0;
-	double incertitude = 0.975;
+	double incertitude = 0.971;//0.975
 	double valeur_max = 75;
 	
 	int largeur = frame.cols;
@@ -142,6 +144,7 @@ void detection() {
 	//1280*720 = 921600
 	
 	char str[200];
+	char c;
 
 	//Rectangle initial
 	Point pt1;
@@ -161,47 +164,83 @@ void detection() {
 	
 	cvtColor(image_contours(frame), image_tampon, CV_BGR2GRAY);
 	
-	while(!verif){
-		frame = getImage();
-		flip(frame, frame, 1);
-
-		cvtColor(image_contours(frame), temp, CV_BGR2GRAY);
+	clock_t startT;
+	double duration;
+	double retenir;
 		
-		compare (temp, image_tampon, result, CMP_EQ);
-		pourcentage  = countNonZero(result);
-		if (pourcentage > taille * incertitude)
-			compteur++;
-		else
-			compteur = 0;
+	while (!verif) {
+		startT = clock();
+		duration = 0;
+		while (duration < 3){
+			frame = getImage();
+				
+			rectangle(frame, pt1, pt2, (255,255,255), 5);
+			stringstream ss;
+			ss << (3.0 - duration);
+			string str1 = ss.str();
+			putText(frame, str1, Point(25, 25), FONT_HERSHEY_SIMPLEX, 1, Scalar(0,0,255),2);
 			
-		pourcentage = (compteur/valeur_max)*100;
-		sprintf(str,"Acquisition : %d %%",int(pourcentage));
+			imshow ("Camera", frame);
+			waitKey(33);
+			duration = (clock() - startT) / (double)CLOCKS_PER_SEC;
+		}
 		
-		putText(frame, str, Point(25,25), FONT_HERSHEY_SIMPLEX, 1, Scalar(255,255,255),2);
-		
-		rectangle(frame, pt1, pt2, (255,255,255), 5);
-		
-		imshow( "Camera", frame );
-		
-		image_tampon = temp.clone();
-		
-		char c = cvWaitKey(33);
-		if( c == 27 ) break;
-		
-		if (compteur >= valeur_max)
+		frame = getImage();
+
+		int pixel_crop = -20;
+			
+		Rect myROI (pt1.x + pixel_crop, pt1.y + pixel_crop, pt2.x - 250 - pixel_crop, pt2.y - 100 - pixel_crop);
+		Mat croppedImage = frame(myROI);
+		//findStartFinish(croppedImage);
+
+		Mat gray, walls;
+		walls = frame.clone();
+
+		cvtColor(croppedImage, gray, CV_BGR2GRAY);
+
+		vector<Vec4i> lines = findWalls(gray);
+
+		for( size_t i = 0; i < lines.size(); i++ ) {
+			lines[i][0] += pt1.x + pixel_crop;
+			lines[i][1] += pt1.y + pixel_crop;
+			lines[i][2] += pt1.x + pixel_crop;
+			lines[i][3] += pt1.y + pixel_crop;
+		}
+
+		for( size_t i = 0; i < lines.size(); i++ ) {
+			line( walls, Point(lines[i][0], lines[i][1]),
+			Point(lines[i][2], lines[i][3]), Scalar(255,0,127), 3, 8 );
+		}
+		imshow("Camera", walls);
+		c = cvWaitKey(0);
+		if( c == 32 ) {
 			verif = true;
+		}
 	}
 	
-	verif = false;
-	
-	Rect myROI (pt1.x + 5, pt1.y + 5, pt2.x - 250 - 5, pt2.y - 100 - 5);
-	Mat croppedImage = frame(myROI);
-	findStartFinish(croppedImage);
+	startT = clock();
+	duration = 0;
+	while (duration < 2){
+		frame = getImage();
+			
+		rectangle(frame, pt1, pt2, (255,255,255), 5);
+		stringstream ss;
+		ss << (2.0 - duration);
+		string str1 = ss.str();
+		putText(frame, str1, Point(25, 25), FONT_HERSHEY_SIMPLEX, 1, Scalar(0,0,255),2);
+		
+		imshow ("Camera", frame);
+		waitKey(33);
+		duration = (clock() - startT) / (double)CLOCKS_PER_SEC;
+	}
 	
 	//finish.x += pt1.x - 5;
 	//finish.y += pt1.y - 5;
-	cout << "START  : " << start.x  << " " << start.y  << endl;
-	cout << "FINISH : " << finish.x << " " << finish.y << endl;
+	start.x = 25;
+	start.y = 25;
+	
+	finish.x = -25;
+	finish.y = -25;
 	
 	Point p;
 	
@@ -221,19 +260,13 @@ void detection() {
 	p.y = y_init + height_init;
 	points_initiaux.push_back(p);
 	
-	Mat gray;
-	cvtColor(frame, gray, CV_BGR2GRAY);
-	findWalls(gray);
-	
-	cout << x_init << " " << y_init << " " << x_init + width_init << " " << y_init + height_init << endl;
+	//cout << x_init << " " << y_init << " " << x_init + width_init << " " << y_init + height_init << endl;
 }
 
 
-void tracking() {
-    Mat frame = getImage();  
-    flip(frame, frame, 1);
- 
-    // x y width height   
+void tracking() { 
+	Mat frame = getImage();
+     // x y width height   
     Rect bboxes[4]; // 4 -> nombre de trackers
     Rect bbox1(x_init - taille_box/2, y_init - taille_box/2, taille_box, taille_box);
     Rect bbox2(x_init + width_init - taille_box/2, y_init - taille_box/2, taille_box, taille_box); 
@@ -248,18 +281,12 @@ void tracking() {
     string trackerType = "KCF";
  
     Ptr<MultiTracker> multiTracker = MultiTracker::create();
-    for (int i = 0; i < 4; i++) // 4 -> nombre de trackers
-		  multiTracker->add(TrackerKCF::create(), frame, Rect2d(bboxes[i]));
-     
+	for (int i = 0; i < 4; i++) // 4 -> nombre de trackers
+		multiTracker->add(TrackerKCF::create(), frame, Rect2d(bboxes[i]));
+
     while(1)
     {     
 		Mat frame = getImage();
-		flip(frame, frame, 1);
-		
-		//code raph le bg <3
-		Mat gray;
-		cvtColor(frame, gray, CV_BGR2GRAY);
-		findWalls(gray);
 		
 		bool ok = multiTracker->update(frame);
 	    
@@ -288,8 +315,7 @@ void tracking() {
 				p.y = multiTracker->getObjects()[i].y + taille_box/2;
 				points_finaux.push_back(p);
 				
-				putText(frame, "Finish", Point(finish.x + p.x - 50,finish.y + p.y + 50), FONT_HERSHEY_SIMPLEX, 1, Scalar(0,0,255),2);
-				putText(frame, "Start" , Point(start.x + p.x  - 50,start.y  + p.y + 50), FONT_HERSHEY_SIMPLEX, 1, Scalar(0,0,255),2);
+				putText(frame, "Start" , Point(start.x + p.x + 25, start.y  + p.y + 25), FONT_HERSHEY_SIMPLEX, 1, Scalar(0,0,255),2);
 			}
 			
 			if (i == 1){
@@ -309,6 +335,8 @@ void tracking() {
 				p.x = multiTracker->getObjects()[i].x + multiTracker->getObjects()[i].width - taille_box/2;
 				p.y = multiTracker->getObjects()[i].y + multiTracker->getObjects()[i].height - taille_box/2;
 				points_finaux.push_back(p);
+				
+				putText(frame, "Finish", Point(finish.x + p.x - 100, finish.y + p.y - 25), FONT_HERSHEY_SIMPLEX, 1, Scalar(0,0,255),2);
 			}
 			
 			/*
@@ -319,7 +347,7 @@ void tracking() {
 			
 		}
 		homography = findHomography(points_finaux, points_initiaux, CV_RANSAC);
-		//imshow("Camera", frame);
+		imshow("Camera", frame);
 		
 		
 	   
@@ -398,7 +426,7 @@ void afficherTriangle() {
 			approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true)*0.02, true);
 			//fillConvexPoly(image, approx, Scalar(255,0,255));
 			
-			if(approx.size()==4 ) { 
+			if(approx.size()== 3 ) { 
 				
 				if(fabs(contourArea(approx) > area)) {
 					
@@ -424,7 +452,7 @@ int main( int argc, char* argv[] ){
 	detection();
 	
 	/* PARTIE TRACKING*/
-	//tracking();
+	tracking();
 	
 	//afficherCercle();
 	//afficherTriangle();
