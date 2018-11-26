@@ -1,19 +1,20 @@
 UNAME_S := $(shell uname -s)
+SOURCES_3D = ./src/OPENGL/2Dto3D.cpp
+SOURCS_MENUS = ./src/MASTER/window.cpp ./src/MASTER/mainMenu.cpp ./src/MASTER/game.cpp
 ifeq ($(UNAME_S),Linux)
 	OPENCV_LIBS = -L/usr/local/lib -pthread -lopencv_imgcodecs -lopencv_imgproc -lopencv_core -lopencv_highgui
-	GLFW_LIBS = -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor
+	GLFW_LIBS = -lGLU -lGL  -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor -lglut
 	INC = -I/usr/local/include/opencv2/
 	OSX_LIBS=
 endif
 
-all : Projet
+#règle all
+all : main
  
-test: test.cpp
-	$(CXX) -c test.cpp $(INC)
- 
-Projet: test
-	$(CXX) -o Projet test.o $(OSX_LIBS) $(OPENCV_LIBS) $(GLFW_LIBS)
-	rm *.o
+main: main.o 
+	$(CXX) -o main main.o $(SOURCES_3D) $(SOURCS_MENUS) $(OSX_LIBS) $(OPENCV_LIBS) $(GLFW_LIBS)
+	rm -rf *.o
+	./main
 	
 clean :
-	rm -rf Projet
+	rm -rf main
