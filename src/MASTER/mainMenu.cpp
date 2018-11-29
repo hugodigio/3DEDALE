@@ -107,7 +107,6 @@ void redim_menu(int width, int height){
 }
 
 void mainMenu(){
-    cout << "affichage" << endl;
     glViewport(0, 0, window_w, window_h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();

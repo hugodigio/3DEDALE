@@ -37,11 +37,8 @@ void display_game(void){
     glMatrixMode(GL_PROJECTION_MATRIX);
     glLoadIdentity();
     gluPerspective( 75, (double)800 / (double)600, 0.1, 100 );
-    //        eyeX,eyeY,eyeZ,centerX,centerY,centerZ,upX,upY,upZ
-    gluLookAt(5.0, 15.0, -5.0, 5.0, 5.0, 0.0, 0.0, 0.0, -1.0);
 
     glMatrixMode(GL_MODELVIEW_MATRIX);
-    glTranslatef(0,0,0);
 
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
@@ -56,10 +53,12 @@ void display_game(void){
         glLightfv (GL_LIGHT0, GL_DIFFUSE, Lblanche);
         glLightfv (GL_LIGHT0, GL_SPECULAR, Lblanche);
     glPopMatrix();
+    //        eyeX,eyeY,eyeZ,centerX,centerY,centerZ,upX,upY,upZ
+    gluLookAt(2.0, 5.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
+    def_axes();
     creerlabyrinthe(lab);
     
-    def_axes();
 
 
     //on affiche

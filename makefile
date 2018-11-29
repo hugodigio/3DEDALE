@@ -3,7 +3,7 @@ SOURCES_3D = ./src/OPENGL/2Dto3D.cpp
 SOURCS_MENUS = ./src/MASTER/window.cpp ./src/MASTER/mainMenu.cpp ./src/MASTER/game.cpp
 ifeq ($(UNAME_S),Linux)
 	OPENCV_LIBS = -L/usr/local/lib -pthread -lopencv_imgcodecs -lopencv_imgproc -lopencv_core -lopencv_highgui
-	GLFW_LIBS = -lGLU -lGL  -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor -lglut
+	GLFW_LIBS = -lGLU -lGL  -lX11 -lXxf86vm -lpthread -ldl -lglut
 	INC = -I/usr/local/include/opencv2/
 	OSX_LIBS=
 endif
