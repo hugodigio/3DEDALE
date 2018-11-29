@@ -12,7 +12,6 @@
 
 using namespace std;
 
-
 /*s'occupe de la rotation du labyrinthe */
 void rotationlabyrinthe(float x, float y, float z);
 /*permet de normaliser les données du labyrinthe.

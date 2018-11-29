@@ -3,16 +3,16 @@
 
 using namespace std;
 
-//float degresx=0, degresy=0, degresz=0;
+float anglex=0.0f, angley=0.0f, anglez=0.0f;
 
 void rotationlabyrinthe(float x, float y, float z){
-    /*degresx = x;
-    degresy = y;
-    degresz = z;*/
+    anglex = x;
+    angley = y;
+    anglez = z;
 }
 
 labyrinthe normaliselabyrinthe(labyrinthe x){
-    cout << "normalisation du labyrinthe" << endl << "---------------------------";
+    cout << "normalisation du labyrinthe" << endl << "---------------------------" << endl;
     labyrinthe normalized;
     float minX = std::numeric_limits<float>::max(), minY = std::numeric_limits<float>::max();
     float maxX = std::numeric_limits<float>::min(),maxY = std::numeric_limits<float>::min();
