@@ -21,8 +21,6 @@ using namespace std;
 //OBJECTIF : TROUVER L'AXE Z D'UN PLAN INCLINÉ (objet) PAR RAPPORT AU MODÈLE (scene) QUI LE CONTIENT
 //ENTRÉES : - 4 points représentants les extrémités du modèle
 //          - 4 points représentants les extrémités de l'objet (plan incliné sur lequel s'affiche le labyrinthe)
-//          - 1 point représentant le centre du modèle
-//          - 2 données représentant les dimensions du modèle (focal_x et focal_y)
 //SORTIE : - 2 vecteurs (translation et rotation) relatifs à la transformation géométrique
 //           correspondant à l'inclinaison de la plan dans le modèle.
 //À partir de ces informations (notamment la rotation), on peut tracer l'axe Z image par image
@@ -36,20 +34,24 @@ cv::Mat image ;                                   //L'image du modèle
 Mat rot_vec(3,1,cv::DataType<double>::type);      //Rotation estimée de la feuille
 Mat trans_vec(3,1,cv::DataType<double>::type);    //Translation estimée de la feuille (optionnel)
 //Les entrées du programme
-Point2f point_modele_1(95,95) ; //On leur donne des valeurs uniquement pour les tests
-Point2f point_modele_2(920,115) ; 
-Point2f point_modele_3(80,705) ; 
-Point2f point_modele_4(965,690) ;
+//On leur donne des valeurs uniquement pour les tests
+Point2f point_modele_1(95,95) ;     // !! Point en haut à gauche !!
+Point2f point_modele_2(920,115) ;   // !! Point en haut à droite !!
+Point2f point_modele_3(80,705) ;    // !! Point en bas à gauche !!
+Point2f point_modele_4(965,690) ;   // !! Point en bas à droite !!
 
 Point2f point_objet_1(185+11,115+80) ;
 Point2f point_objet_2(795+11,150+80) ;
 Point2f point_objet_3(60+11,520+80) ;
 Point2f point_objet_4(975+11,500+80) ;
 
-Point2f centre(514, 401) ;
+//Calcul du centre du modèle (on en a besoin pour le changement de repère)
+Point2f centre((point_modele_1.x+point_modele_2.x+point_modele_3.x+point_modele_4.x/4),
+               (point_modele_1.y+point_modele_2.y+point_modele_3.y+point_modele_4.y/4)) ;
 
-double focal_x = 885 ;
-double focal_y = 610 ;
+//Calcul des dimensions du modèle (on en a besoin pour cameraMatrix)
+double focal_x = point_modele_2.x - point_modele_1.x ;
+double focal_y = point_modele_2.y - point_modele_1.y ;
 
 //Callback souris récupérant les coordonnées (x,y) d'un clic
 static void onMouse(int event, int x, int y, int flags, void* param)
@@ -63,9 +65,49 @@ static void onMouse(int event, int x, int y, int flags, void* param)
     }
 }
 
+// Checks if a matrix is a valid rotation matrix.
+bool isRotationMatrix(Mat &R)
+{
+    Mat Rt;
+    transpose(R, Rt);
+    Mat shouldBeIdentity = Rt * R;
+    Mat I = Mat::eye(3,3, shouldBeIdentity.type());
+     
+    return  norm(I, shouldBeIdentity) < 1e-6;
+     
+}
+
+// Calculates rotation matrix to euler angles
+// The result is the same as MATLAB except the order
+// of the euler angles ( x and z are swapped ).
+Vec3f rotationMatrixToEulerAngles(Mat &R)
+{
+ 
+    assert(isRotationMatrix(R));
+     
+    float sy = sqrt(R.at<double>(0,0) * R.at<double>(0,0) +  R.at<double>(1,0) * R.at<double>(1,0) );
+ 
+    bool singular = sy < 1e-6; // If
+ 
+    float x, y, z;
+    if (!singular)
+    {
+        x = atan2(R.at<double>(2,1) , R.at<double>(2,2));
+        y = atan2(-R.at<double>(2,0), sy);
+        z = atan2(R.at<double>(1,0), R.at<double>(0,0));
+    }
+    else
+    {
+        x = atan2(-R.at<double>(1,2), R.at<double>(1,1));
+        y = atan2(-R.at<double>(2,0), sy);
+        z = 0;
+    }
+    return Vec3f(x, y, z);
+
+}
+
 
 int main( int argc, char **argv ) {
-
 
 /*Lecture et Affichage d'une image entrée dans le terminal--------------------------------------------------*/
 
@@ -147,42 +189,18 @@ int main( int argc, char **argv ) {
     //Grâce à ces données relatives à la transformation géometrique actuelle,
     //on est capable de trouver l'axe Z de l'objet (=> plan incliné sur lequel figure le labyrinthe).
 
-
-/*Visualisation du résultat------------------------------------------------------------------------------------------*/
-
-    Mat image_objet = cv::imread( "feuille_inclinee.jpg" ); /* Read the file */
-
-    //Création des matrices de rotation/translation que l'on va appliquer au point du modèle
-    Mat rot_mat = Mat::zeros(3,3,CV_64F);
-    Mat trans_mat = Mat::zeros(3,3,CV_64F);
-
     //Conversion des vecteurs en matrices
+    Mat rot_mat , trans_mat ;
     Rodrigues(rot_vec, rot_mat) ;
     Rodrigues(trans_vec, trans_mat) ;
 
-    //Application des matrices aux points du modèle
-    std::vector<Point2f> scene2; //Contient les points du modèle modifiés par les matrices
-    cv::Mat scene2_mat(3,1,cv::DataType<double>::type); //On ne se sert de cette matrice que pour l'homogénéité des calculs
+    //Calcul des angles d'Euler de la matrice de rotation
+    Vec3f euler_angles = rotationMatrixToEulerAngles(rot_mat) ;
+    //Conversion radians ---> degrés
+    euler_angles[0] = euler_angles[0] * (180.0/3.141592653589793238463) ;
+    euler_angles[1] = euler_angles[1] * (180.0/3.141592653589793238463) ;
+    euler_angles[2] = euler_angles[2] * (180.0/3.141592653589793238463) ;
 
-    scene2 = scene ;
-    scene2_mat = rot_mat * (Mat)scene2 ;
-    scene2_mat = trans_mat * (Mat)scene2 ;
-
-    scene2 = (vector<Point2f>)scene2_mat ;
-
-    //Dessin du résultat
-    line(image_objet, scene[0], scene2[0], CV_RGB(0, 0, 1), 1) ;
-    line(image_objet, scene[1], scene2[1], CV_RGB(0, 0, 1), 1) ;
-    line(image_objet, scene[2], scene2[2], CV_RGB(0, 0, 1), 1) ;
-    line(image_objet, scene[3], scene2[3], CV_RGB(0, 0, 1), 1) ;
-
-    //Affichage
-    cv::namedWindow( "Affine Transformation" , WINDOW_AUTOSIZE);
-    cv::imshow( "Affine Transformation", image_objet );
-
-    cv::waitKey(0); // Attente de la tappe d'une touche dans la fenêtre
-
-    //TODO : Traiter ce problème de multiplication de matrices
+    cout << euler_angles << "\n" ;
 
 }
-
