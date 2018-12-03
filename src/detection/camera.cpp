@@ -67,6 +67,7 @@ Mat image_contours(Mat frame) {
 	
 }
 
+/*
 bool findCircle(Mat image) {
     
     Mat gray;
@@ -125,7 +126,7 @@ void findStartFinish(Mat image) {
 	}
 	//cout << "FINISH : " << finish.x << " " << finish.y << endl;
 }
-
+*/
 void detection() {
 	Mat frame = getImage();
 	Mat image_tampon;
@@ -161,9 +162,9 @@ void detection() {
 	y_init 		= pt1.y;
 	width_init  = pt2.x - pt1.x;
 	height_init = pt2.y - pt1.y;
-	
+
 	cvtColor(image_contours(frame), image_tampon, CV_BGR2GRAY);
-	
+
 	clock_t startT;
 	double duration;
 	double retenir;
@@ -440,6 +441,14 @@ void afficherTriangle() {
 }
 */
 
+void test_camera() {
+	while(1) {
+		Mat frame = getImage();
+		cout << frame.rows << " " << frame.cols << endl;
+		imshow("Camera", frame);
+	}
+}
+
 int main( int argc, char* argv[] ){
 	
 	initCamera();
@@ -449,13 +458,14 @@ int main( int argc, char* argv[] ){
 	//cvNamedWindow( "Test", CV_WINDOW_AUTOSIZE );
 	
 	/* PARTIE RECONNAISSANCE */
-	detection();
+	//detection();
 	
 	/* PARTIE TRACKING*/
-	tracking();
+	//tracking();
 	
 	//afficherCercle();
 	//afficherTriangle();
+	test_camera();
 	
 	closeCamera();
 	
