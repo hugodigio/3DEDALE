@@ -54,13 +54,13 @@ void display_game(void){
         glLightfv (GL_LIGHT0, GL_SPECULAR, Lblanche);
     glPopMatrix();
     //        eyeX,eyeY,eyeZ,centerX,centerY,centerZ,upX,upY,upZ
-    gluLookAt(2.0, 5.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+    gluLookAt(0.0, 0.1, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
     def_axes();
+    glPushMatrix();
     creerlabyrinthe(lab);
+    glPopMatrix();
     
-
-
     //on affiche
     glutSwapBuffers();
 
@@ -83,8 +83,7 @@ void LoadGame(int window_width, int window_height){
     lab = test();
     glutDisplayFunc(display_game);
     glutReshapeFunc(redim_game);
-
-
+    
     //clavier, souris, motion
     glutKeyboardFunc(clavier_game);
     glutSpecialFunc(specialKey_game);
