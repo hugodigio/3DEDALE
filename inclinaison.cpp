@@ -144,6 +144,11 @@ void inclinaison(vector<Point2f> modele, vector<Point2f> objet, Mat rot_mat, Mat
     euler_angles[0] = euler_angles[0] * (180.0/3.141592653589793238463) ;
     euler_angles[1] = euler_angles[1] * (180.0/3.141592653589793238463) ;
     euler_angles[2] = euler_angles[2] * (180.0/3.141592653589793238463) ;
+    //Echange de la rotation sur x et z (à cause de la fonction rotationMatrixToEulerAngles...)
+    float swap ;
+    swap = euler_angles[0] ;
+    euler_angles[0] = euler_angles[1] ;
+    euler_angles[1] = swap ;
 
     cout << euler_angles << "\n" ;
 
