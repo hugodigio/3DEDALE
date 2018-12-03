@@ -22,31 +22,34 @@ using namespace std;
 //ENTRÉES : - 4 points représentants les extrémités du modèle
 //          - 4 points représentants les extrémités de l'objet (plan incliné sur lequel s'affiche le labyrinthe)
 //          - 1 point représentant le centre du modèle
-//          NB: point_objet_4 doit être le plus en bas et le plus à droite (de telle sorte que ces coordonnées représentent les dimensions du modèle)
+//          - 2 données représentant les dimensions du modèle (focal_x et focal_y)
 //SORTIE : - 2 vecteurs (translation et rotation) relatifs à la transformation géométrique
 //           correspondant à l'inclinaison de la plan dans le modèle.
 //À partir de ces informations (notamment la rotation), on peut tracer l'axe Z image par image
 //(c.a.d. à chaque fois que les coordonnées du plan incliné changent)
 
 //compilation: make
-//test: ./inclinaison feuille_inclinee.jpg
+//test: ./inclinaison
 
 //VARIABLES GLOBALES
-cv::Mat image ;                                   //L'image chargé dans le terminal
+cv::Mat image ;                                   //L'image du modèle
 Mat rot_vec(3,1,cv::DataType<double>::type);      //Rotation estimée de la feuille
 Mat trans_vec(3,1,cv::DataType<double>::type);    //Translation estimée de la feuille (optionnel)
 //Les entrées du programme
-Point2f point_modele_1(250,100) ; //On leur donne des valeurs uniquement pour les tests
-Point2f point_modele_2(1030,100) ; 
-Point2f point_modele_3(250,620) ; 
-Point2f point_modele_4(1030,620) ;
+Point2f point_modele_1(95,95) ; //On leur donne des valeurs uniquement pour les tests
+Point2f point_modele_2(920,115) ; 
+Point2f point_modele_3(80,705) ; 
+Point2f point_modele_4(965,690) ;
 
-Point2f point_objet_1(250,360) ;
-Point2f point_objet_2(1030,360) ;
-Point2f point_objet_3(250,360) ;
-Point2f point_objet_4(1030,360) ;
+Point2f point_objet_1(185+11,115+80) ;
+Point2f point_objet_2(795+11,150+80) ;
+Point2f point_objet_3(60+11,520+80) ;
+Point2f point_objet_4(975+11,500+80) ;
 
-Point2f centre(780, 360) ;
+Point2f centre(514, 401) ;
+
+double focal_x = 885 ;
+double focal_y = 610 ;
 
 //Callback souris récupérant les coordonnées (x,y) d'un clic
 static void onMouse(int event, int x, int y, int flags, void* param)
@@ -63,14 +66,10 @@ static void onMouse(int event, int x, int y, int flags, void* param)
 
 int main( int argc, char **argv ) {
 
-    if ( argc != 2 ) {
-       printf( "Usage: analyse_image ImageToLoadAndDisplay\n" );
-       return -1;
-    }
 
 /*Lecture et Affichage d'une image entrée dans le terminal--------------------------------------------------*/
 
-    image = cv::imread( argv[1] ); /* Read the file */
+    image = cv::imread( "feuille.jpg" ); /* Read the file */
 
     if ( !image.data ) { /* Check for invalid input */
         printf("Could not open or find the image\n") ;
@@ -89,9 +88,6 @@ int main( int argc, char **argv ) {
     cv::waitKey(0); // Attente de la tappe d'une touche dans la fenêtre
 
 /*Calcul du vecteur de rotation représentant l'inclinaison de la feuille par rapport au modèle---------------------*/
-
-    double focal_x = point_modele_4.x ;
-    double focal_y = point_modele_4.y ;
 
     //Changement de repère (Déplacement de l'origine au centre du modèle)
     point_modele_1 -= centre ;
@@ -149,8 +145,44 @@ int main( int argc, char **argv ) {
 
     //NB: rot_vec et trans_vec sont les résultats attendus par le programmme
     //Grâce à ces données relatives à la transformation géometrique actuelle,
-    //on est capable de trouver l'axe Z de l'objet (=> plan incliné sur lequel figure le labirynthe).
+    //on est capable de trouver l'axe Z de l'objet (=> plan incliné sur lequel figure le labyrinthe).
 
-    //TODO : - Dessiner des lignes sur l'image test en entrée (feuille_inclinee.jpg)
+
+/*Visualisation du résultat------------------------------------------------------------------------------------------*/
+
+    Mat image_objet = cv::imread( "feuille_inclinee.jpg" ); /* Read the file */
+
+    //Création des matrices de rotation/translation que l'on va appliquer au point du modèle
+    Mat rot_mat = Mat::zeros(3,3,CV_64F);
+    Mat trans_mat = Mat::zeros(3,3,CV_64F);
+
+    //Conversion des vecteurs en matrices
+    Rodrigues(rot_vec, rot_mat) ;
+    Rodrigues(trans_vec, trans_mat) ;
+
+    //Application des matrices aux points du modèle
+    std::vector<Point2f> scene2; //Contient les points du modèle modifiés par les matrices
+    cv::Mat scene2_mat(3,1,cv::DataType<double>::type); //On ne se sert de cette matrice que pour l'homogénéité des calculs
+
+    scene2 = scene ;
+    scene2_mat = rot_mat * (Mat)scene2 ;
+    scene2_mat = trans_mat * (Mat)scene2 ;
+
+    scene2 = (vector<Point2f>)scene2_mat ;
+
+    //Dessin du résultat
+    line(image_objet, scene[0], scene2[0], CV_RGB(0, 0, 1), 1) ;
+    line(image_objet, scene[1], scene2[1], CV_RGB(0, 0, 1), 1) ;
+    line(image_objet, scene[2], scene2[2], CV_RGB(0, 0, 1), 1) ;
+    line(image_objet, scene[3], scene2[3], CV_RGB(0, 0, 1), 1) ;
+
+    //Affichage
+    cv::namedWindow( "Affine Transformation" , WINDOW_AUTOSIZE);
+    cv::imshow( "Affine Transformation", image_objet );
+
+    cv::waitKey(0); // Attente de la tappe d'une touche dans la fenêtre
+
+    //TODO : Traiter ce problème de multiplication de matrices
+
 }
 
