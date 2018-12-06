@@ -3,8 +3,8 @@
 
 class labyrinthe{
     public:
-    cv::Point2d PointDepart;
-    cv::Point2d PointArrivee;
+    cv::Point2f PointDepart;
+    cv::Point2f PointArrivee;
     std::vector<cv::Vec4f> lignes;
 };
 

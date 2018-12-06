@@ -11,9 +11,11 @@ void rotationlabyrinthe(float x, float y, float z){
     anglez = z;
 }
 
+
 labyrinthe normaliselabyrinthe(labyrinthe x){
     cout << "normalisation du labyrinthe" << endl << "---------------------------" << endl;
     labyrinthe normalized;
+    //Centrer le labyrinthe
     float minX = std::numeric_limits<float>::max(), minY = std::numeric_limits<float>::max();
     float maxX = std::numeric_limits<float>::min(),maxY = std::numeric_limits<float>::min();
     cv::Point2f transform = cv::Point2f(0,0);
@@ -36,7 +38,7 @@ labyrinthe normaliselabyrinthe(labyrinthe x){
     transform = cv::Point2f( (minX-maxX)/2 , (minY-maxY)/2 );
     cout << "transformation: " << transform << endl;
 
-    //formation du labyrinthe normalise
+    //formation du labyrinthe centre
     normalized.PointDepart  = x.PointDepart;
     normalized.PointArrivee = x.PointArrivee;
     for(int i=0; i < x.lignes.size(); i++){
@@ -46,6 +48,40 @@ labyrinthe normaliselabyrinthe(labyrinthe x){
         float y2 = x.lignes[i][3]+transform.y;
         normalized.lignes.push_back(cv::Vec4f(x1,y1,x2,y2));
     }
+    //reduire l'echelle du labyrinthe pour qu'il fasse une taille maximale de 10
+    cv::Point2f maxcoord = cv::Point2f(0,0);
+    float score=0;
+    
+    //on cherche la coordonnee la plus éloignee du centre
+    for(int i=0; i < normalized.lignes.size(); i++){
+        float scoretmp = abs(normalized.lignes[i][0]) + abs(normalized.lignes[i][1]);
+        if (scoretmp>score){
+            score = scoretmp;
+            maxcoord = cv::Point2f(abs(normalized.lignes[i][0]),abs(normalized.lignes[i][1]));
+        }
+        scoretmp = abs(normalized.lignes[i][2]) + abs(normalized.lignes[i][3]);
+        if (scoretmp>score){
+            score = scoretmp;
+            maxcoord = cv::Point2f(abs(normalized.lignes[i][2]),abs(normalized.lignes[i][3]));
+        }
+    }
+    cout << "coordonnée la plus éloignée(absolue): " << maxcoord << endl;
+    
+    //si le labyrinthe est trop grand, on calcule l'échelle a appliquer
+    if(maxcoord.x > 5.0f || maxcoord.y > 5.0f){
+        float scale = 1.0f;
+        if(maxcoord.x > maxcoord.y){
+            scale = 5.0f / maxcoord.x;
+        }else{
+            scale = 5.0f / maxcoord.y;
+        }
+        cout << "echelle appliquée: " << scale << endl;
+        //application de l'echelle
+        for(int i=0; i < normalized.lignes.size(); i++){
+            for(int j=0; j<4;j++) normalized.lignes[i][j] = normalized.lignes[i][j] * scale;
+        }
+    }
+    
     return normalized;
 }
 void creerlabyrinthe(labyrinthe x){
@@ -179,10 +215,6 @@ void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
     }
     //code pour faire un mur
 }
-
-/* ----------------------------------------------------------
-// PLUS TARD DANS LE MAIN  QUAND ON AURA REUSSI A LINK SA MER
-------------------------------------------------------------*/
 
 void def_axes(){
 
