@@ -22,8 +22,8 @@ using namespace std;
 //OBJECTIF : TROUVER L'AXE Z D'UN PLAN INCLINÉ (objet) PAR RAPPORT AU MODÈLE (scene) QUI LE CONTIENT
 //ENTRÉES : - 4 points représentants les extrémités du modèle.
 //          - 4 points représentants les extrémités de l'objet (plan incliné sur lequel s'affiche le labyrinthe).
-//SORTIE : - 2 vecteurs (translation et rotation) relatifs à la transformation géométrique
-//           correspondant à l'inclinaison de la plan dans le modèle.
+//SORTIE : - 2 matrices (translation et rotation) relatives à la transformation géométrique
+//           correspondante à l'inclinaison de la plan dans le modèle.
 //         - 3 valeurs (stockés dans un Vec3b euler_angles) correspondant aux angles de rotations sur les 3 axes.
 //           Ces valeurs sont calculés à partir du vecteur de rotation.
 //À partir de ces informations (notamment la rotation), on peut tracer l'axe Z image par image
