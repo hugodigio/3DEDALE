@@ -71,7 +71,7 @@ Vec3f rotationMatrixToEulerAngles(Mat &R){
 
 }
 
-void inclinaison(vector<Point2f> modele, vector<Point2f> objet, Mat rot_mat, Mat trans_mat, Vec3f euler_angles){
+void inclinaison(vector<Point2f> modele, vector<Point2f> objet, Mat* rot_mat, Mat* trans_mat, Vec3f* euler_angles){
 
     assert((modele.size() == 4) && (objet.size() == 4) ) ;
 
@@ -131,26 +131,24 @@ void inclinaison(vector<Point2f> modele, vector<Point2f> objet, Mat rot_mat, Mat
 
     cv::solvePnP(obj, modele, cameraMatrix, distCoeffs, rot_vec, trans_vec);
 
-    cout << rot_vec << "\n" ;
-    cout << trans_vec << "\n" ;
-
     //Conversion des vecteurs en matrices
-    Rodrigues(rot_vec, rot_mat) ;
-    Rodrigues(trans_vec, trans_mat) ;
+    Rodrigues(rot_vec, *rot_mat) ;
+    Rodrigues(trans_vec, *trans_mat) ;
 
     //Calcul des angles d'Euler de la matrice de rotation
-    euler_angles = rotationMatrixToEulerAngles(rot_mat) ;
+    Vec3f euler_angles_val ;
+    euler_angles_val = rotationMatrixToEulerAngles(*rot_mat) ;
     //Conversion radians ---> degrés
-    euler_angles[0] = euler_angles[0] * (180.0/3.141592653589793238463) ;
-    euler_angles[1] = euler_angles[1] * (180.0/3.141592653589793238463) ;
-    euler_angles[2] = euler_angles[2] * (180.0/3.141592653589793238463) ;
+    euler_angles_val[0] = euler_angles_val[0] * (180.0/3.141592653589793238463) ;
+    euler_angles_val[1] = euler_angles_val[1] * (180.0/3.141592653589793238463) ;
+    euler_angles_val[2] = euler_angles_val[2] * (180.0/3.141592653589793238463) ;
     //Echange de la rotation sur x et z (à cause de la fonction rotationMatrixToEulerAngles...)
     float swap ;
-    swap = euler_angles[0] ;
-    euler_angles[0] = euler_angles[1] ;
-    euler_angles[1] = swap ;
+    swap = euler_angles_val[0] ;
+    euler_angles_val[0] = euler_angles_val[1] ;
+    euler_angles_val[1] = swap ;
 
-    cout << euler_angles << "\n" ;
+    *euler_angles = euler_angles_val ;
 
 }
 
@@ -189,9 +187,13 @@ int main( int argc, char **argv ) {
     Vec3f euler_angles ;
 
     //Le calcul
-    inclinaison(modele, objet, rot_mat, trans_mat, euler_angles) ;
+    inclinaison(modele, objet, &rot_mat, &trans_mat, &euler_angles) ;
+
+    //Les résultats
+    cout << rot_mat << "\n" ;
+    cout << trans_mat << "\n" ;
+    cout << euler_angles << "\n" ;
 
     return 0 ;
 
 }
-
