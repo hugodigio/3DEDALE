@@ -8,10 +8,9 @@
 #include "../MASTER/labyrinthe.hpp"
 
 #define HAUTEUR_MUR 1.0
-#define EPAISSEUR_MUR 0.5
+#define EPAISSEUR_MUR 0.1
 
 using namespace std;
-
 
 /*s'occupe de la rotation du labyrinthe */
 void rotationlabyrinthe(float x, float y, float z);

@@ -1,5 +1,6 @@
 #include "game.hpp"
 #include "mainMenu.hpp"
+#include "../OPENCV/camera.hpp"
 
 labyrinthe lab;
 int window_w_game;
@@ -54,13 +55,13 @@ void display_game(void){
         glLightfv (GL_LIGHT0, GL_SPECULAR, Lblanche);
     glPopMatrix();
     //        eyeX,eyeY,eyeZ,centerX,centerY,centerZ,upX,upY,upZ
-    gluLookAt(2.0, 5.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+    gluLookAt(0.0, 0.1, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
     def_axes();
+    glPushMatrix();
     creerlabyrinthe(lab);
+    glPopMatrix();
     
-
-
     //on affiche
     glutSwapBuffers();
 
@@ -78,13 +79,25 @@ void redim_game(int window_width, int window_height){
 }
 
 void LoadGame(int window_width, int window_height){
+
+    //lancement des fonctions OpenCV
+
+    start_camera();
+    vector<cv::Vec4f> lines = detection();
+    lab.PointDepart = cv::Point2d(1,1);
+    lab.PointArrivee = cv::Point2d(10,10);
+    lab.lignes = lines;
+    init_tracking(getImage());/*
+    while(1)
+		tracking(getImage());*/
+
+    //lancement des fonctions OpenGL
+	
     window_w_game = window_width;
     window_h_game = window_height;
-    lab = test();
     glutDisplayFunc(display_game);
     glutReshapeFunc(redim_game);
-
-
+    
     //clavier, souris, motion
     glutKeyboardFunc(clavier_game);
     glutSpecialFunc(specialKey_game);
@@ -92,4 +105,5 @@ void LoadGame(int window_width, int window_height){
     glutPassiveMotionFunc(souris_mouvement_game);
 
     glutPostRedisplay();
+    
 }
