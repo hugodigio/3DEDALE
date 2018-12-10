@@ -4,6 +4,7 @@
 #include <iostream>
 #include <opencv/highgui.h>
 #include <vector>
+#include <GL/glut.h>
 #include "../MASTER/labyrinthe.hpp"
 
 #define HAUTEUR_MUR 1.0
@@ -11,6 +12,11 @@
 
 using namespace std;
 
+/*s'occupe de la rotation du labyrinthe */
+void rotationlabyrinthe(float x, float y, float z);
+/*permet de normaliser les données du labyrinthe.
+les coordonnées du labyrinthe sont modifiées de facon à ce que le centre du labyrinthe soit au centre du repère*/
+labyrinthe normaliselabyrinthe(labyrinthe x);
 /* initialise le modele 3D du labyrinthe en creant tout les murs
 contenu dans la variable x ainsi que le point de depart et d'arrivee */
 void creerlabyrinthe(labyrinthe x);
