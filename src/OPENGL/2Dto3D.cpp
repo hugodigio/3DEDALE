@@ -11,7 +11,6 @@ void rotationlabyrinthe(float x, float y, float z){
     anglez = z;
 }
 
-
 labyrinthe normaliselabyrinthe(labyrinthe x){
     cout << "normalisation du labyrinthe" << endl << "---------------------------" << endl;
     labyrinthe normalized;
@@ -82,13 +81,17 @@ labyrinthe normaliselabyrinthe(labyrinthe x){
         }
     }
     
-    return normalized;
+	return normalized;
 }
 void creerlabyrinthe(labyrinthe x){
     glRotatef(0.0,1.0,0.0,0.0);
     glRotatef(0.0,0.0,1.0,0.0);
     glRotatef(0,0.0,0.0,1.0);
     labyrinthe lab = normaliselabyrinthe(x);
+    cout << "murs:" << endl;
+    for(int i=0; i<lab.lignes.size(); i++){
+		cout << "mur " << i << lab.lignes[i] << endl;
+	}	
 
     GLfloat white[4] = {1.0f,1.0f,1.0f,1.0f};
     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
@@ -215,6 +218,10 @@ void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
     }
     //code pour faire un mur
 }
+
+/* ----------------------------------------------------------
+// PLUS TARD DANS LE MAIN  QUAND ON AURA REUSSI A LINK SA MER
+------------------------------------------------------------*/
 
 void def_axes(){
 

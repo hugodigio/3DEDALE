@@ -87,9 +87,12 @@ void LoadGame(int window_width, int window_height){
     lab.PointDepart = cv::Point2d(1,1);
     lab.PointArrivee = cv::Point2d(10,10);
     lab.lignes = lines;
+    init_tracking(getImage());/*
+    while(1)
+		tracking(getImage());*/
 
     //lancement des fonctions OpenGL
-
+	
     window_w_game = window_width;
     window_h_game = window_height;
     glutDisplayFunc(display_game);
@@ -102,4 +105,5 @@ void LoadGame(int window_width, int window_height){
     glutPassiveMotionFunc(souris_mouvement_game);
 
     glutPostRedisplay();
+    
 }

@@ -15,7 +15,9 @@ void findStartFinish(cv::Mat image);
 
 std::vector<cv::Vec4f> detection();
 
-void tracking();
+void init_tracking(cv::Mat frame);
+
+void tracking(cv::Mat frame);
 
 void start_camera();
                           
