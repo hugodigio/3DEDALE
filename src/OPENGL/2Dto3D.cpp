@@ -80,6 +80,17 @@ labyrinthe normaliselabyrinthe(labyrinthe x){
             for(int j=0; j<4;j++) normalized.lignes[i][j] = normalized.lignes[i][j] * scale;
         }
     }
+
+    //normalisation des murs qui ne sont pas droit
+    for(int i=0; i<normalized.lignes.size();i++){
+        cv::Vec4f currentLine = normalized.lignes[i];
+        if((currentLine[0] != currentLine[2]) && (currentLine[1] != currentLine[3])){
+            //le mur n'est ni horizontal, ni vertical
+            float seuil = 0.1;
+
+
+        }
+    }  
     
 	return normalized;
 }
@@ -90,7 +101,7 @@ void creerlabyrinthe(labyrinthe x){
     labyrinthe lab = normaliselabyrinthe(x);
     cout << "murs:" << endl;
     for(int i=0; i<lab.lignes.size(); i++){
-		cout << "mur " << i << lab.lignes[i] << endl;
+		cout << "mur " << i << ":" << lab.lignes[i] << endl;
 	}	
 
     GLfloat white[4] = {1.0f,1.0f,1.0f,1.0f};
