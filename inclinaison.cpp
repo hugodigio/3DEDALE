@@ -84,8 +84,9 @@ void inclinaison(vector<Point2f> modele, vector<Point2f> objet, Mat* rot_mat, Ma
                 (modele[0].y+modele[1].y+modele[2].y+modele[3].y/4)) ;
 
     //Calcul des dimensions du modèle (on en a besoin pour cameraMatrix)
-    double focal_x = modele[1].x - modele[0].x ;
-    double focal_y = modele[1].y - modele[0].y ;
+
+    double focal_x = 1280 ;
+    double focal_y = 720 ;
 
     //Changement de repère (Déplacement de l'origine au centre du modèle)
     modele[0] -= centre ;
@@ -116,10 +117,10 @@ void inclinaison(vector<Point2f> modele, vector<Point2f> objet, Mat* rot_mat, Ma
     cv::Mat cameraMatrix(3,3,cv::DataType<double>::type); //Conventional Camera Matrix
     cameraMatrix.at<double>(0,0) = focal_x ;
     cameraMatrix.at<double>(0,1) = 0 ; 
-    cameraMatrix.at<double>(0,2) = 0 ; //center_x (dans le nouveau repère)
+    cameraMatrix.at<double>(0,2) = focal_x / 2 ; //center_x 
     cameraMatrix.at<double>(1,0) = 0 ; 
     cameraMatrix.at<double>(1,1) = focal_y ;
-    cameraMatrix.at<double>(1,2) = 0 ; //center_y (dans le nouveau repère)
+    cameraMatrix.at<double>(1,2) = focal_y / 2 ; //center_y 
     cameraMatrix.at<double>(2,0) = 0 ; 
     cameraMatrix.at<double>(2,1) = 0 ; 
     cameraMatrix.at<double>(2,2) = 1 ; 
@@ -149,8 +150,8 @@ void inclinaison(vector<Point2f> modele, vector<Point2f> objet, Mat* rot_mat, Ma
     //Echange de la rotation sur x et z (à cause de la fonction rotationMatrixToEulerAngles...)
     float swap ;
     swap = euler_angles_val[0] ;
-    euler_angles_val[0] = euler_angles_val[1] ;
-    euler_angles_val[1] = swap ;
+    euler_angles_val[0] = euler_angles_val[2] ;
+    euler_angles_val[2] = swap ;
 
     *euler_angles = euler_angles_val ;
 
@@ -169,35 +170,37 @@ int main( int argc, char **argv ) {
     Point2f point_modele_4(965,690) ;   // !! Point en bas à droite !!
 
     vector<Point2f> modele ;
-    modele.push_back(point_modele_4) ;
-    modele.push_back(point_modele_3) ;
-    modele.push_back(point_modele_2) ;
     modele.push_back(point_modele_1) ;
+    modele.push_back(point_modele_2) ;
+    modele.push_back(point_modele_3) ;
+    modele.push_back(point_modele_4) ;
 
-    Point2f point_objet_1(185+11,115+80) ;
-    Point2f point_objet_2(795+11,150+80) ;
-    Point2f point_objet_3(60+11,520+80) ;
-    Point2f point_objet_4(975+11,500+80) ;
+    Point2f point_objet_1(80,705) ;
+    Point2f point_objet_2(965,690) ;
+    Point2f point_objet_3(95,95) ;
+    Point2f point_objet_4(920,115) ;
 
     vector<Point2f> objet ;
-    objet.push_back(point_objet_4) ;
-    objet.push_back(point_objet_3) ;
-    objet.push_back(point_objet_2) ;
     objet.push_back(point_objet_1) ;
+    objet.push_back(point_objet_2) ;
+    objet.push_back(point_objet_3) ;
+    objet.push_back(point_objet_4) ;
 
     //Les sorties du programmes
-    Mat rot_mat ;
-    Mat trans_mat ;
-    Vec3f euler_angles ;
+    Mat rot_mat, rot_mat_zero ;
+    Mat trans_mat, trans_mat_zero ;
+    Vec3f euler_angles, euler_angles_zero ;
 
     //Le calcul
+    inclinaison(modele, modele, &rot_mat_zero, &trans_mat_zero, &euler_angles_zero) ;
     inclinaison(modele, objet, &rot_mat, &trans_mat, &euler_angles) ;
 
     //Les résultats
     cout << rot_mat << "\n" ;
     cout << trans_mat << "\n" ;
-    cout << euler_angles << "\n" ;
+    cout << euler_angles_zero - euler_angles << "\n" ; //Ce résultat est directement exploitable comparé à euler_angles seul
 
     return 0 ;
 
 }
+
