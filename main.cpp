@@ -1,4 +1,20 @@
+#include <iostream>
+#include <GL/glut.h>
+#include <GL/glu.h>
+#include "./src/MASTER/window.hpp"
+
 /*
-Il s'agit de l'executable du programme, aucun algorithme n'est présent dans ce fichier
-hormis le code nécéssaire à l'éxécution du programme.
+A FAIRE:
+- GLFW -> GLUT
 */
+
+int main(int argc, char  **argv) {
+
+    //creation de la fenêtre
+    createWindow(argc, argv);
+    
+    //displayMenu(window);
+
+   
+    return 0;
+}
