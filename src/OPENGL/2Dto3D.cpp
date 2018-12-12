@@ -87,7 +87,12 @@ labyrinthe normaliselabyrinthe(labyrinthe x){
         if((currentLine[0] != currentLine[2]) && (currentLine[1] != currentLine[3])){
             //le mur n'est ni horizontal, ni vertical
             float seuil = 0.1;
-
+            if(abs(currentLine[0]-currentLine[2]) < 0.1){
+                currentLine[2]=currentLine[0];
+            }else if(abs(currentLine[1]-currentLine[3]) < 0.1){
+                currentLine[3]=currentLine[1];
+            }
+            normalized.lignes[i] = currentLine;
 
         }
     }  

@@ -1,0 +1,1 @@
+- arranger les axes du modèle pour correspondre au repère classique OpenGL (x:gauche/droite y:bas/haut, z:"vers nous")
