@@ -87,9 +87,7 @@ void LoadGame(int window_width, int window_height){
     lab.PointDepart = cv::Point2d(1,1);
     lab.PointArrivee = cv::Point2d(10,10);
     lab.lignes = lines;
-    init_tracking(getImage());/*
-    while(1)
-		tracking(getImage());*/
+    init_tracking(getImage());
 
     //lancement des fonctions OpenGL
 	

@@ -1,6 +1,6 @@
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
-	OPENCV_LIBS = -L/usr/local/lib -pthread -lopencv_imgcodecs -lopencv_imgproc -lopencv_core -lopencv_highgui -lopencv_videoio -lopencv_tracking -lopencv_calib3d
+	OPENCV_LIBS =  -pthread -lopencv_imgcodecs -lopencv_imgproc -lopencv_core -lopencv_highgui -lopencv_videoio -lopencv_tracking -lopencv_calib3d
 	INC = -I/usr/local/include/opencv2/
 	GLFW_LIBS = -lGL -lGLU  -lpthread -ldl -lglut
 	OSX_LIBS = 

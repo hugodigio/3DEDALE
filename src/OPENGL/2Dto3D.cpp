@@ -93,16 +93,16 @@ labyrinthe normaliselabyrinthe(labyrinthe x){
                 currentLine[3]=currentLine[1];
             }
             normalized.lignes[i] = currentLine;
-
         }
     }  
-    
+    cout << endl << "NORMALISATION TERMINEE" << endl << "-----------------------" << endl;
 	return normalized;
 }
 void creerlabyrinthe(labyrinthe x){
-    glRotatef(0.0,1.0,0.0,0.0);
-    glRotatef(0.0,0.0,1.0,0.0);
-    glRotatef(0,0.0,0.0,1.0);
+    cout << "GENERATION LABYRINTHE" << endl << "---------------------------" << endl;
+    glRotatef(anglex,1.0,0.0,0.0);
+    glRotatef(angley,0.0,1.0,0.0);
+    glRotatef(anglez,0.0,0.0,1.0);
     labyrinthe lab = normaliselabyrinthe(x);
     cout << "murs:" << endl;
     for(int i=0; i<lab.lignes.size(); i++){
@@ -118,6 +118,8 @@ void creerlabyrinthe(labyrinthe x){
         cv::Point2d B = cv::Point2d(lab.lignes[i][2],lab.lignes[i][3]);
         def_mur(A,B,EPAISSEUR_MUR,HAUTEUR_MUR);
     }
+    cout << endl << "GENERATION TERMINEE" << endl << "-----------------------" << endl;
+	
 }
 
 labyrinthe test(){
