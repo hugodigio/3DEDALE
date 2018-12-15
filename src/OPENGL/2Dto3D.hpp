@@ -13,7 +13,7 @@
 using namespace std;
 
 /*s'occupe de la rotation du labyrinthe */
-void rotationlabyrinthe(float x, float y, float z);
+void rotationlabyrinthe(cv::Vec3f angles);
 /*permet de normaliser les données du labyrinthe.
 les coordonnées du labyrinthe sont modifiées de facon à ce que le centre du labyrinthe soit au centre du repère*/
 labyrinthe normaliselabyrinthe(labyrinthe x);

@@ -5,10 +5,10 @@ using namespace std;
 
 float anglex=0.0f, angley=0.0f, anglez=0.0f;
 
-void rotationlabyrinthe(float x, float y, float z){
-    anglex = x;
-    angley = y;
-    anglez = z;
+void rotationlabyrinthe(cv::Vec3f angles){
+    anglex = angles[1];
+    angley = angles[0];
+    anglez = -angles[2];
 }
 
 labyrinthe normaliselabyrinthe(labyrinthe x){
@@ -103,6 +103,7 @@ void creerlabyrinthe(labyrinthe x){
     glRotatef(anglex,1.0,0.0,0.0);
     glRotatef(angley,0.0,1.0,0.0);
     glRotatef(anglez,0.0,0.0,1.0);
+    def_axes();
     labyrinthe lab = normaliselabyrinthe(x);
     cout << "murs:" << endl;
     for(int i=0; i<lab.lignes.size(); i++){

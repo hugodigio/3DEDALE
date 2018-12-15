@@ -1,6 +1,6 @@
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
-	OPENCV_LIBS =  -pthread -lopencv_imgcodecs -lopencv_imgproc -lopencv_core -lopencv_highgui -lopencv_videoio -lopencv_tracking -lopencv_calib3d
+	OPENCV_LIBS = -pthread -lopencv_imgcodecs -lopencv_imgproc -lopencv_core -lopencv_highgui -lopencv_videoio -lopencv_tracking -lopencv_calib3d
 	INC = -I/usr/local/include/opencv2/
 	GLFW_LIBS = -lGL -lGLU  -lpthread -ldl -lglut
 	OSX_LIBS = 
@@ -31,8 +31,8 @@ window: src/MASTER/window.cpp
  
 st: main.cpp
 	$(CXX) -c main.cpp $(INC)
- 
-Projet: camera wallsDetector inclinaison window mainMenu game 2Dto3D st
+	
+Projet: camera wallsDetector inclinaison window mainMenu game 2Dto3D st inclinaison
 	$(CXX) -o Projet camera.o walls_detector.o inclinaison.o main.o window.o mainMenu.o game.o 2Dto3D.o $(OSX_LIBS) $(OPENCV_LIBS) $(GLFW_LIBS)
 	rm *.o
 	./Projet
