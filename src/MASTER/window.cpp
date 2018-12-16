@@ -6,7 +6,7 @@ void createWindow(int argc, char **argv){
     
     //Taille et emplacemet de la fenetre
     glutInitWindowSize(800,600);
-    glutInitWindowPosition(200,100);
+    glutInitWindowPosition(800,100);
     
     //Type d'affichage, Tampon de profondeur, Double buffer
     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);

@@ -1,6 +1,6 @@
 #include "mainMenu.hpp"
 #include "game.hpp"
-
+#include "labyrinthe.hpp"
 #define NB_OPTIONS 4
 
 using namespace std;

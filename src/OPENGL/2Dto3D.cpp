@@ -5,12 +5,11 @@ using namespace std;
 
 float anglex=0.0f, angley=0.0f, anglez=0.0f;
 
-void rotationlabyrinthe(float x, float y, float z){
-    anglex = x;
-    angley = y;
-    anglez = z;
+void rotationlabyrinthe(cv::Vec3f angles){
+    anglex = angles[1];
+    angley = angles[0];
+    anglez = -angles[2];
 }
-
 
 labyrinthe normaliselabyrinthe(labyrinthe x){
     cout << "normalisation du labyrinthe" << endl << "---------------------------" << endl;
@@ -48,6 +47,7 @@ labyrinthe normaliselabyrinthe(labyrinthe x){
         float y2 = x.lignes[i][3]+transform.y;
         normalized.lignes.push_back(cv::Vec4f(x1,y1,x2,y2));
     }
+    
     //reduire l'echelle du labyrinthe pour qu'il fasse une taille maximale de 10
     cv::Point2f maxcoord = cv::Point2f(0,0);
     float score=0;
@@ -81,14 +81,35 @@ labyrinthe normaliselabyrinthe(labyrinthe x){
             for(int j=0; j<4;j++) normalized.lignes[i][j] = normalized.lignes[i][j] * scale;
         }
     }
-    
-    return normalized;
+
+    //normalisation des murs qui ne sont pas droit
+    for(int i=0; i<normalized.lignes.size();i++){
+        cv::Vec4f currentLine = normalized.lignes[i];
+        if((currentLine[0] != currentLine[2]) && (currentLine[1] != currentLine[3])){
+            //le mur n'est ni horizontal, ni vertical
+            float seuil = 0.1;
+            if(abs(currentLine[0]-currentLine[2]) < 0.1){
+                currentLine[2]=currentLine[0];
+            }else if(abs(currentLine[1]-currentLine[3]) < 0.1){
+                currentLine[3]=currentLine[1];
+            }
+            normalized.lignes[i] = currentLine;
+        }
+    }  
+    cout << endl << "NORMALISATION TERMINEE" << endl << "-----------------------" << endl;
+	return normalized;
 }
 void creerlabyrinthe(labyrinthe x){
-    glRotatef(0.0,1.0,0.0,0.0);
-    glRotatef(0.0,0.0,1.0,0.0);
-    glRotatef(0,0.0,0.0,1.0);
+    cout << "GENERATION LABYRINTHE" << endl << "---------------------------" << endl;
+    glRotatef(anglex,1.0,0.0,0.0);
+    glRotatef(angley,0.0,1.0,0.0);
+    glRotatef(anglez,0.0,0.0,1.0);
+    def_axes();
     labyrinthe lab = normaliselabyrinthe(x);
+    cout << "murs:" << endl;
+    for(int i=0; i<lab.lignes.size(); i++){
+		cout << "mur " << i << ":" << lab.lignes[i] << endl;
+	}	
 
     GLfloat white[4] = {1.0f,1.0f,1.0f,1.0f};
     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
@@ -99,6 +120,8 @@ void creerlabyrinthe(labyrinthe x){
         cv::Point2d B = cv::Point2d(lab.lignes[i][2],lab.lignes[i][3]);
         def_mur(A,B,EPAISSEUR_MUR,HAUTEUR_MUR);
     }
+    cout << endl << "GENERATION TERMINEE" << endl << "-----------------------" << endl;
+	
 }
 
 labyrinthe test(){
@@ -123,6 +146,7 @@ labyrinthe test(){
 }
 
 void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
+    glScalef(1.0,-1.0,1.0); //inverse l'axe y pour passer du repere "image OpenCV" au repere 3D
     if(A.x == B.x){
         //               MUR VERTICAL
         //face gauche
@@ -215,6 +239,10 @@ void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
     }
     //code pour faire un mur
 }
+
+/* ----------------------------------------------------------
+// PLUS TARD DANS LE MAIN  QUAND ON AURA REUSSI A LINK SA MER
+------------------------------------------------------------*/
 
 void def_axes(){
 
