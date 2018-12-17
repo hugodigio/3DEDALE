@@ -8,11 +8,6 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
-
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/highgui/highgui.hpp"
-using namespace cv;
-
 //#include <Box2D/Box2D.h>
 
 #define LONGUEUR 5
@@ -31,107 +26,66 @@ struct Point
     }
 };
 
-//changer par struct dans le fichier labyrinthe
-// cv::Point2f PointdeDepart;
-// cv::Point2f PointdArrivee;
-// vector <cv::Point2f> A;
-// vector <cv::Point2f> B;
+
 
 float M_plateau[16];
 float M_boule[16];
 
-//force de rotation du plateau a chaque coup de touche, en degre
+///
 float rotx = 10.;
 float roty = 10.;
 
-
-//Rotation actuelle sur l'axe x ou y du plateau
 float rotationActuelleX = 0.;
 float rotationActuelleY = 0.;
 
-
-//Vitesse de deplacement de la boule sur x et sur y
 float deplacementX = 0.1;
 float deplacementY = 0.1;
-
-
 int valeurChangement = 5;
 
 ///
 int etatMouvement = 0;
-int direction = -1;
-int lastDirection = -1;
+int direction = 4;
 
-//coordonnee de la boule en x et en y
 float bouleX = 0.;
 float bouleY = 0.;
 
-//vector <Point> murCoord;
-//vector<float> murCoordX;
-//vector<float> murCoordY;
+vector <Point> murCoord;
 
+vector<float> murCoordX;
+vector<float> murCoordY;
 
-//
-vector <float> coeffDirecteur;
-vector <float> constK;
-vector <Point2f> A;//initialiser dans remplissageCoordMur (temporaire)
-vector <Point2f> B;//initialiser dans remplissageCoordMur (temporaire)
-
-//
 double Xmax, Ymax;
 double Xmin, Ymin;
 
 
 //Fonctions PROTOTYPES
-
-//
 void remplissageCoordMur();
-void initEquDroites ();
-
-//
-void affichePVector(vector<Point2f> *v);
-void afficheFVector(vector<float> *v);
-
-//
-vector<Point2f> vectPointcopy(vector<Point2f> vect);
-vector<float> vectCopy(vector<float> vect);
-
-//
-void def_axes(void);
+//void def_axes(void);
 
 void def_carre(void);
 void def_boule(void);
 void def_plateau(void);
-void def_boite(void);
+//void def_boite(void);
 
-//
 void RotationM(float M[16], int valaxe, float angle);
 void MouvementM(float M[16], int valaxe, float distance);
 
-//
 void changerEtat();
 bool estChanger();
-
-int casCollision = -1;
-void setCasCollision(int c);
-void donnerCas(int cas);
+int donnerCas(int cas);
 bool collisionMurs(int cas);
 int checkSigne(int axis);
 
-void def_casCollision(int parallele);
-bool findIfIn (Point2f p);
-
-//
 void affichageCoordBoule(int val);
+
 void Timer(int value);
 
-//
 void clavier(unsigned char key, int x, int y);
 
-//
 void dessinScene();
 void affichage(void);
 void redim(int width, int height);
+
 void init();
 void load_boule(int argc, char **argv);
 
