@@ -36,7 +36,7 @@ labyrinthe normaliselabyrinthe(labyrinthe x){
     cout << "min:(" << minX << "," << minY << ") max:(" << maxX << "," << maxY << ")" << endl;
     transform = cv::Point2f( (minX-maxX)/2 , (minY-maxY)/2 );
     cout << "transformation: " << transform << endl;
-
+    
     //formation du labyrinthe centre
     normalized.PointDepart  = x.PointDepart;
     normalized.PointArrivee = x.PointArrivee;
@@ -145,94 +145,150 @@ labyrinthe test(){
     return lab;
 }
 
+labyrinthe bf(){
+    labyrinthe lab;
+
+    lab.PointDepart  = cv::Point2f(1,1);
+    lab.PointArrivee = cv::Point2f(5.7,5.7);
+    //murs
+    lab.lignes.push_back(cv::Vec4f(1.51,0.00,1.51,4.12));
+    lab.lignes.push_back(cv::Vec4f(1.51,2.57,3.50,2.57));
+    lab.lignes.push_back(cv::Vec4f(3.50,0.12,3.50,2.57));
+    lab.lignes.push_back(cv::Vec4f(1.54,4.83,3.61,4.83));
+    lab.lignes.push_back(cv::Vec4f(3.59,4.14,3.59,6.67));
+    lab.lignes.push_back(cv::Vec4f(6.54,1.79,9.96,1.79));
+    lab.lignes.push_back(cv::Vec4f(3.08,3.61,8.08,3.61));
+    lab.lignes.push_back(cv::Vec4f(5.13,1.03,5.13,3.61));
+    lab.lignes.push_back(cv::Vec4f(6.15,3.61,6.15,6.67));
+
+    //murs exterieurs
+    lab.lignes.push_back(cv::Vec4f(0.00,0.00,10.0,0.00)); //haut
+    lab.lignes.push_back(cv::Vec4f(0.00,0.00,0.00,6.67)); //gauche
+    lab.lignes.push_back(cv::Vec4f(10.0,0.00,10.0,6.67)); //droit
+    lab.lignes.push_back(cv::Vec4f(0.00,6.67,10.0,6.67)); //bas
+
+    return lab;
+}
+
+labyrinthe bf_mir(){
+    labyrinthe lab;
+
+    lab.PointDepart  = cv::Point2f(1,1);
+    lab.PointArrivee = cv::Point2f(5.7,5.7);
+    //murs
+    lab.lignes.push_back(cv::Vec4f(8.40,0.00,8.40,4.10));
+    lab.lignes.push_back(cv::Vec4f(8.41,2.57,6.40,2.57));
+    lab.lignes.push_back(cv::Vec4f(6.40,0.08,6.40,2.57));
+    lab.lignes.push_back(cv::Vec4f(8.46,5.39,5.66,5.39));
+    lab.lignes.push_back(cv::Vec4f(5.64,4.62,5.64,6.67));
+    lab.lignes.push_back(cv::Vec4f(6.92,3.59,1.85,3.59));
+    lab.lignes.push_back(cv::Vec4f(3.85,3.58,3.85,6.67));
+    lab.lignes.push_back(cv::Vec4f(4.87,1.03,4.87,3.61));
+    lab.lignes.push_back(cv::Vec4f(3.46,1.80,0.00,1.80));
+
+    //murs exterieurs
+    lab.lignes.push_back(cv::Vec4f(0.00,0.00,10.0,0.00)); //haut
+    lab.lignes.push_back(cv::Vec4f(0.00,0.00,0.00,6.67)); //gauche
+    lab.lignes.push_back(cv::Vec4f(10.0,0.00,10.0,6.67)); //droit
+    lab.lignes.push_back(cv::Vec4f(0.00,6.67,10.0,6.67)); //bas
+
+    return lab;
+}
+
 void def_mur(cv::Point2f A, cv::Point2f B, float epaisseur, float hauteur){
-    glScalef(1.0,-1.0,1.0); //inverse l'axe y pour passer du repere "image OpenCV" au repere 3D
+    /*
+    toutes les coordonnees sur l'axe y sont négatives pour faire la conversion
+    entre les axes utilises pour le traitement d'image 2D OpenCV
+    et les axes utilises pour la 3D
+    (l'axe y demarre du haut vers le bas en image 2D OpenCV
+    tandis que l'axe y demarre du bas vers le haut en 3D) 
+    */
     if(A.x == B.x){
         //               MUR VERTICAL
         //face gauche
         glBegin(GL_POLYGON);
         glDisable(GL_CULL_FACE);
             glNormal3f(-1.0,0.0,0.0);
-            glVertex3f(A.x-(epaisseur/2), A.y, 0);
-            glVertex3f(B.x-(epaisseur/2), B.y, 0);
-            glVertex3f(B.x-(epaisseur/2), B.y, hauteur);
-            glVertex3f(A.x-(epaisseur/2), A.y, hauteur);
+            glVertex3f(A.x-(epaisseur/2), -A.y, 0);
+            glVertex3f(B.x-(epaisseur/2), -B.y, 0);
+            glVertex3f(B.x-(epaisseur/2), -B.y, hauteur);
+            glVertex3f(A.x-(epaisseur/2), -A.y, hauteur);
         glEnd();
         //face droite
         glBegin(GL_POLYGON);
         glDisable(GL_CULL_FACE);
             glNormal3f(1.0,0.0,0.0);
-            glVertex3f(A.x+(epaisseur/2), A.y, 0);
-            glVertex3f(B.x+(epaisseur/2), B.y, 0);
-            glVertex3f(B.x+(epaisseur/2), B.y, hauteur);
-            glVertex3f(A.x+(epaisseur/2), A.y, hauteur);
+            glVertex3f(A.x+(epaisseur/2), -A.y, 0);
+            glVertex3f(B.x+(epaisseur/2), -B.y, 0);
+            glVertex3f(B.x+(epaisseur/2), -B.y, hauteur);
+            glVertex3f(A.x+(epaisseur/2), -A.y, hauteur);
         glEnd();
         //face de dessus
         glBegin(GL_POLYGON);
             glNormal3f(0,0,1.0);
-            glVertex3f(A.x-(epaisseur/2), A.y, hauteur);
-            glVertex3f(A.x+(epaisseur/2), A.y, hauteur);
-            glVertex3f(B.x+(epaisseur/2), B.y, hauteur);
-            glVertex3f(B.x-(epaisseur/2), B.y, hauteur);
+            glVertex3f(A.x-(epaisseur/2), -A.y, hauteur);
+            glVertex3f(A.x+(epaisseur/2), -A.y, hauteur);
+            glVertex3f(B.x+(epaisseur/2), -B.y, hauteur);
+            glVertex3f(B.x-(epaisseur/2), -B.y, hauteur);
         glEnd();
         //face arriere
         glBegin(GL_POLYGON);
         glDisable(GL_CULL_FACE);
             glNormal3f(0,1.0,0.0);
-            glVertex3f(A.x-(epaisseur/2), A.y, 0);
-            glVertex3f(A.x-(epaisseur/2), A.y, hauteur);
-            glVertex3f(A.x+(epaisseur/2), A.y, hauteur);
-            glVertex3f(A.x+(epaisseur/2), A.y, 0);
+            glVertex3f(A.x-(epaisseur/2), -A.y, 0);
+            glVertex3f(A.x-(epaisseur/2), -A.y, hauteur);
+            glVertex3f(A.x+(epaisseur/2), -A.y, hauteur);
+            glVertex3f(A.x+(epaisseur/2), -A.y, 0);
         glEnd();
         //face avant
         glBegin(GL_POLYGON);
             glNormal3f(0,-1.0,0.0);
-            glVertex3f(B.x-(epaisseur/2), B.y,0);
-            glVertex3f(B.x+(epaisseur/2), B.y,0);
-            glVertex3f(B.x+(epaisseur/2), B.y,hauteur);
-            glVertex3f(B.x-(epaisseur/2), B.y,hauteur);
+            glVertex3f(B.x-(epaisseur/2), -B.y,0);
+            glVertex3f(B.x+(epaisseur/2), -B.y,0);
+            glVertex3f(B.x+(epaisseur/2), -B.y,hauteur);
+            glVertex3f(B.x-(epaisseur/2), -B.y,hauteur);
         glEnd();
     }else if(A.y == B.y){
         // MUR HORIZONTAL
         // face avant
         glBegin(GL_POLYGON);
             glNormal3f(0,1.0,0.0);
-            glVertex3f(A.x, A.y-(epaisseur/2), 0);
-            glVertex3f(B.x, B.y-(epaisseur/2), 0);
-            glVertex3f(B.x, B.y-(epaisseur/2), hauteur);
-            glVertex3f(A.x, A.y-(epaisseur/2), hauteur);
+            glVertex3f(A.x, -A.y-(epaisseur/2), 0);
+            glVertex3f(B.x, -B.y-(epaisseur/2), 0);
+            glVertex3f(B.x, -B.y-(epaisseur/2), hauteur);
+            glVertex3f(A.x, -A.y-(epaisseur/2), hauteur);
         glEnd();
         // face arriere
         glBegin(GL_POLYGON);
             glNormal3f(0,-1.0,0.0);
-            glVertex3f(A.x, A.y+(epaisseur/2), 0);
-            glVertex3f(B.x, B.y+(epaisseur/2), 0);
-            glVertex3f(B.x, B.y+(epaisseur/2), hauteur);
-            glVertex3f(A.x, A.y+(epaisseur/2), hauteur);
+            glVertex3f(A.x, -A.y+(epaisseur/2), 0);
+            glVertex3f(B.x, -B.y+(epaisseur/2), 0);
+            glVertex3f(B.x, -B.y+(epaisseur/2), hauteur);
+            glVertex3f(A.x, -A.y+(epaisseur/2), hauteur);
         glEnd();
         //face de dessus
         glBegin(GL_POLYGON);
             glNormal3f(0,0,1.0);
-            glVertex3f(A.x, A.y-(epaisseur/2), hauteur);
-            glVertex3f(A.x, A.y+(epaisseur/2), hauteur);
-            glVertex3f(B.x, B.y+(epaisseur/2), hauteur);
-            glVertex3f(B.x, B.y-(epaisseur/2), hauteur);
+            glVertex3f(A.x, -A.y-(epaisseur/2), hauteur);
+            glVertex3f(A.x, -A.y+(epaisseur/2), hauteur);
+            glVertex3f(B.x, -B.y+(epaisseur/2), hauteur);
+            glVertex3f(B.x, -B.y-(epaisseur/2), hauteur);
         glEnd();
         //face droite
         glBegin(GL_POLYGON);
             glNormal3f(-1.0,0.0,0.0);
-            glVertex3f(A.x, A.y+(epaisseur/2),0);
-            glVertex3f(A.x, A.y-(epaisseur/2),0);
-            glVertex3f(A.x, A.y-(epaisseur/2),hauteur);
-            glVertex3f(A.x, A.y+(epaisseur/2),hauteur);
+            glVertex3f(A.x, -A.y+(epaisseur/2),0);
+            glVertex3f(A.x, -A.y-(epaisseur/2),0);
+            glVertex3f(A.x, -A.y-(epaisseur/2),hauteur);
+            glVertex3f(A.x, -A.y+(epaisseur/2),hauteur);
         glEnd();
         //face gauche
         glBegin(GL_POLYGON);
            glNormal3f(1.0,0.0,0.0);
-           glVertex3f(B.x, B.y+(epaisseur/2),0);
-           glVertex3f(B.x, B.y-(epaisseur/2),0);
-           glVertex3f(B.x, B.y-(epaisseur/2),hauteur);
-           glVertex3f(B.x, B.y+(epaisseur/2),hauteur);
+           glVertex3f(B.x, -B.y+(epaisseur/2),0);
+           glVertex3f(B.x, -B.y-(epaisseur/2),0);
+           glVertex3f(B.x, -B.y-(epaisseur/2),hauteur);
+           glVertex3f(B.x, -B.y+(epaisseur/2),hauteur);
         glEnd();
     } else {
         cout << "erreur: mur non vertical ou horizontal" << endl;

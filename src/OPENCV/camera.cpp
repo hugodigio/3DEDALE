@@ -119,7 +119,7 @@ vector<Vec4f> detection() {
 
 		int pixel_crop = 20;
 			
-		Rect myROI (pt1.x - pixel_crop, pt1.y - pixel_crop, pt2.x + pixel_crop, pt2.y + pixel_crop);
+		Rect myROI (pt1.x - pixel_crop, pt1.y - pixel_crop, pt2.x + pixel_crop - pt1.x, pt2.y + pixel_crop - pt1.y);
 		Mat croppedImage = frame(myROI);
 
 		Mat gray, walls;
@@ -146,7 +146,7 @@ vector<Vec4f> detection() {
 		}
 		String message = "Espace pour continuer, n'importe quelle touche pour recommencer.";
 		putText(walls, message, Point(25, 25), FONT_HERSHEY_SIMPLEX, 1, Scalar(0,0,255),2);
-		imshow("Camera", walls);
+		imshow("Camera", walls); // REMPLACER croppedImage par walls
 		c = cvWaitKey(0);
 		if( c == 32 ) {
 			verif = true;

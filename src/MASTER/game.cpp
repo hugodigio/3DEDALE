@@ -113,6 +113,7 @@ void display_game(void){
 }
 
 void redim_game(int window_width, int window_height){
+    cout << "redim" << endl;
     window_w_game = window_width;
     window_h_game = window_height;
     glViewport(0, 0, window_w_game, window_h_game);
@@ -132,6 +133,7 @@ void LoadGame(int window_width, int window_height){
     lab.PointDepart = cv::Point2d(1,1);
     lab.PointArrivee = cv::Point2d(10,10);
     lab.lignes = lines;
+    //lab = bf_mir();
     init_tracking(getImage());
     
     //lancement des fonctions OpenGL
