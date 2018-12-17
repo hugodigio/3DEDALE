@@ -36,8 +36,15 @@ using namespace std;
 //compilation: make
 //test: ./inclinaison
 
+//Valeurs par défaut, peuvent être changées dans initInclinaison()
 double focal_x = 1280 ;
 double focal_y = 720 ;
+
+//Définit les dimensions de l'image en entrée comme étant les dimensions de la camera
+void initInclinaison(Mat img){
+    focal_x = img.cols ;
+    focal_y = img.rows ;
+}
 
 // Checks if a matrix is a valid rotation matrix.
 bool isRotationMatrix(Mat &R){
