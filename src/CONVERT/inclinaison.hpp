@@ -1,6 +1,8 @@
 #ifndef _INCLINAISON_
 #define _INCLINAISON_
 
+void initInclinaison(Mat img) ;
+
 bool isRotationMatrix(cv::Mat &R) ;
 
 cv::Vec3f rotationMatrixToEulerAngles(cv::Mat &R) ;
