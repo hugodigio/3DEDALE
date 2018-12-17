@@ -6,8 +6,8 @@ using namespace std;
 float anglex=0.0f, angley=0.0f, anglez=0.0f;
 
 void rotationlabyrinthe(cv::Vec3f angles){
-    anglex = angles[1];
-    angley = angles[0];
+    anglex = -angles[1];
+    angley = -angles[0];
     anglez = -angles[2];
 }
 
@@ -19,6 +19,11 @@ labyrinthe normaliselabyrinthe(labyrinthe x){
     float maxX = std::numeric_limits<float>::min(),maxY = std::numeric_limits<float>::min();
     cv::Point2f transform = cv::Point2f(0,0);
     
+    cout << "murs avant echelle:" << endl;
+    for(int i=0; i<x.lignes.size(); i++){
+		cout << "mur " << i << ":" << x.lignes[i] << endl;
+	}	
+
     for (int i=0; i<x.lignes.size();i++){
         //trouver le min en x
         if(x.lignes[i][0] < minX) minX = x.lignes[i][0];
@@ -34,19 +39,24 @@ labyrinthe normaliselabyrinthe(labyrinthe x){
         if(x.lignes[i][3] > maxY) maxY = x.lignes[i][3];
     }
     cout << "min:(" << minX << "," << minY << ") max:(" << maxX << "," << maxY << ")" << endl;
-    transform = cv::Point2f( (minX-maxX)/2 , (minY-maxY)/2 );
+    transform = cv::Point2f( ((maxX-minX)/2.0f)+minX , ((maxY-minY)/2.0f)+minY );
     cout << "transformation: " << transform << endl;
     
     //formation du labyrinthe centre
     normalized.PointDepart  = x.PointDepart;
     normalized.PointArrivee = x.PointArrivee;
     for(int i=0; i < x.lignes.size(); i++){
-        float x1 = x.lignes[i][0]+transform.x;
-        float y1 = x.lignes[i][1]+transform.y;
-        float x2 = x.lignes[i][2]+transform.x;
-        float y2 = x.lignes[i][3]+transform.y;
+        float x1 = x.lignes[i][0]-transform.x;
+        float y1 = x.lignes[i][1]-transform.y;
+        float x2 = x.lignes[i][2]-transform.x;
+        float y2 = x.lignes[i][3]-transform.y;
         normalized.lignes.push_back(cv::Vec4f(x1,y1,x2,y2));
     }
+
+    cout << "murs apres echelle:" << endl;
+    for(int i=0; i<normalized.lignes.size(); i++){
+		cout << "mur " << i << ":" << normalized.lignes[i] << endl;
+	}	
     
     //reduire l'echelle du labyrinthe pour qu'il fasse une taille maximale de 10
     cv::Point2f maxcoord = cv::Point2f(0,0);
@@ -87,7 +97,7 @@ labyrinthe normaliselabyrinthe(labyrinthe x){
         cv::Vec4f currentLine = normalized.lignes[i];
         if((currentLine[0] != currentLine[2]) && (currentLine[1] != currentLine[3])){
             //le mur n'est ni horizontal, ni vertical
-            float seuil = 0.1;
+            float seuil = 1.0;
             if(abs(currentLine[0]-currentLine[2]) < 0.1){
                 currentLine[2]=currentLine[0];
             }else if(abs(currentLine[1]-currentLine[3]) < 0.1){
