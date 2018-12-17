@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+#include <sys/time.h>
 
 #include "camera.hpp"
 #include "walls_detector.hpp"
@@ -23,11 +24,10 @@ int height_init;
 
 int taille_box = 70;
 
-vector <Point> points_initiaux;
-vector <Point> points_finaux;
+vector <Point2f> points_finaux;
 
-Point start;
-Point finish;
+Point2f start;
+Point2f finish;
 
 //Partie tracker
 Rect bboxes[4]; // 4 -> nombre de trackers
@@ -65,67 +65,62 @@ Mat getImage () {
 
 vector<Vec4f> detection() {
 	Mat frame = getImage();
-	Mat temp;
-	Mat result;
 
-	bool verif = false;
-	
-	double pourcentage = 0.0;
-	double incertitude = 0.971;//0.975
-	double valeur_max = 75;
-	
 	int largeur = frame.cols;
 	int hauteur = frame.rows;
 	int taille = largeur * hauteur;
-	//1280*720 = 921600
+	double ratio = (double)largeur/(double)hauteur;
+	int hauteur_ratio = (int)(largeur - 2*(largeur*0.2))/(1.48);
 	
-	char str[200];
-	char c;
-
 	//Rectangle initial
 	Point pt1;
-	pt1.x = 250;
-	pt1.y = 100;
-	
+	pt1.x = largeur * 0.2; // =250 pour 1280
+	pt1.y = (hauteur - hauteur_ratio)/2;; // =100 pour 720
 	Point pt2;
-	pt2.x = largeur - 250;
-	pt2.y = hauteur - 100;
-	
-	//cout << pt1.x << " " << pt1.y << " , " << pt2.x << " " << pt2.y << endl << endl;
+	pt2.x = largeur - (largeur*0.2);
+	pt2.y = hauteur - (hauteur - hauteur_ratio)/2;;
 	
 	x_init 		= pt1.x;
 	y_init 		= pt1.y;
 	width_init  = pt2.x - pt1.x;
 	height_init = pt2.y - pt1.y;
-
-	clock_t startT;
+	
+	//Variables d'affichage
+	char str[200];
+	char c;
+	
+	//Temps de tratement
+	struct timeval tv1, tv2;
 	double duration;
-	double retenir;
+	double temps_traitement = 8.0; // Le temps de traitement de la première boucle
+	
 	vector<Vec4f> lines;
+	
+	bool verif = false;
 	while (!verif) {
-		startT = clock();
+		gettimeofday(&tv1, NULL);
 		duration = 0;
-		while (duration < 3){
+		while (duration < temps_traitement){
 			frame = getImage();
 				
 			rectangle(frame, pt1, pt2, (255,255,255), 5);
 			stringstream ss;
-			ss << (3.0 - duration);
-			string str1 = ss.str();
+			ss << (temps_traitement - duration);
+			string str1 = "Detection des murs : " + ss.str() + " secondes...";
 			putText(frame, str1, Point(25, 25), FONT_HERSHEY_SIMPLEX, 1, Scalar(0,0,255),2);
 			
 			imshow("Camera", frame);
 			waitKey(33);
-			duration = (clock() - startT) / (double)CLOCKS_PER_SEC;
+			gettimeofday(&tv2, NULL);
+			duration = (tv2.tv_sec - tv1.tv_sec);
 		}
 		
 		frame = getImage();
 
-		int pixel_crop = -20;
+		int pixel_crop = 20;
 			
-		Rect myROI (pt1.x + pixel_crop, pt1.y + pixel_crop, pt2.x - 250 - pixel_crop, pt2.y - 100 - pixel_crop);
+		Rect myROI (pt1.x - pixel_crop, pt1.y - pixel_crop, pt2.x + pixel_crop - pt1.x, pt2.y + pixel_crop - pt1.y);
 		Mat croppedImage = frame(myROI);
-		//findStartFinish(croppedImage);
 
 		Mat gray, walls;
 		walls = frame.clone();
@@ -135,10 +130,10 @@ vector<Vec4f> detection() {
 		lines = findWalls(gray);
 
 		for( size_t i = 0; i < lines.size(); i++ ) {
-			lines[i][0] += pt1.x + pixel_crop;
-			lines[i][1] += pt1.y + pixel_crop;
-			lines[i][2] += pt1.x + pixel_crop;
-			lines[i][3] += pt1.y + pixel_crop;
+			lines[i][0] += pt1.x - pixel_crop;
+			lines[i][1] += pt1.y - pixel_crop;
+			lines[i][2] += pt1.x - pixel_crop;
+			lines[i][3] += pt1.y - pixel_crop;
 		}
 		
 		for(int i=0; i<lines.size(); i++){
@@ -149,58 +144,33 @@ vector<Vec4f> detection() {
 			line( walls, Point(lines[i][0], lines[i][1]),
 			Point(lines[i][2], lines[i][3]), Scalar(255,0,127), 3, 8 );
 		}
-		imshow("Camera", walls);
+		String message = "Espace pour continuer, n'importe quelle touche pour recommencer.";
+		putText(walls, message, Point(25, 25), FONT_HERSHEY_SIMPLEX, 1, Scalar(0,0,255),2);
+		imshow("Camera", walls); // REMPLACER croppedImage par walls
 		c = cvWaitKey(0);
 		if( c == 32 ) {
 			verif = true;
 		}
 	}
 	
-	startT = clock();
+	gettimeofday(&tv1, NULL);
 	duration = 0;
-	while (duration < 2){
+	temps_traitement = 5.0;  // Le temps de traitement de la deuxième boucle
+	while (duration < temps_traitement){
 		frame = getImage();
 			
 		rectangle(frame, pt1, pt2, (255,255,255), 5);
 		stringstream ss;
-		ss << (2.0 - duration);
-		string str1 = ss.str();
+		ss << (temps_traitement - duration);
+		string str1 = "Tracking des coins : " + ss.str() + " secondes...";
 		putText(frame, str1, Point(25, 25), FONT_HERSHEY_SIMPLEX, 1, Scalar(0,0,255),2);
 		
 		imshow ("Camera", frame);
 		waitKey(33);
-		duration = (clock() - startT) / (double)CLOCKS_PER_SEC;
+		gettimeofday(&tv2, NULL);
+		duration = (tv2.tv_sec - tv1.tv_sec);
 	}
-	
-	//finish.x += pt1.x - 5;
-	//finish.y += pt1.y - 5;
-	start.x = 25;
-	start.y = 25;
-	
-	finish.x = -25;
-	finish.y = -25;
-	
-	Point p;
-	
-	p.x = x_init;
-	p.y = y_init;
-	points_initiaux.push_back(p);
-	
-	p.x = x_init + width_init;
-	p.y = y_init;
-	points_initiaux.push_back(p);
-	
-	p.x = x_init;
-	p.y = y_init + height_init;
-	points_initiaux.push_back(p);
-	
-	p.x = x_init + width_init;
-	p.y = y_init + height_init;
-	points_initiaux.push_back(p);
-	
-	//cout << x_init << " " << y_init << " " << x_init + width_init << " " << y_init + height_init << endl;
-	
-	//cvDestroyWindow("Camera");
+
 	return lines;
 }
 
@@ -223,9 +193,15 @@ void init_tracking(Mat frame) {
     multiTracker = MultiTracker::create();
 	for (int i = 0; i < 4; i++) // 4 -> nombre de trackers
 		multiTracker->add(TrackerKCF::create(), frame, Rect2d(bboxes[i]));
+		
+	start.x = 25;
+	start.y = 25;
+	
+	finish.x = -25;
+	finish.y = -25;
 }
 
-void tracking(Mat frame) { 
+vector<Point2f> tracking(Mat frame) { 
 	bool ok = multiTracker->update(frame);
 	    
 	if (!ok)
@@ -239,7 +215,7 @@ void tracking(Mat frame) {
 		if (i == 0)
 			points_finaux.clear();
 		
-		Point p;
+		Point2f p;
 		
 		/* Points dans l'image :
 		 * 		0    1
@@ -278,9 +254,10 @@ void tracking(Mat frame) {
 		}
 			
 	}
-	homography = findHomography(points_finaux, points_initiaux, CV_RANSAC);
 	imshow("Camera", frame);
 	waitKey(33);
+	
+	return points_finaux;
 	 
 }
 	

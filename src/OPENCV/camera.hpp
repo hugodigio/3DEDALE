@@ -17,7 +17,7 @@ std::vector<cv::Vec4f> detection();
 
 void init_tracking(cv::Mat frame);
 
-void tracking(cv::Mat frame);
+std::vector<cv::Point2f> tracking(cv::Mat frame);
 
 void start_camera();
                           

@@ -1,7 +1,7 @@
 #include "mainMenu.hpp"
 #include "game.hpp"
 #include "labyrinthe.hpp"
-#define NB_OPTIONS 4
+#define NB_OPTIONS 3
 
 using namespace std;
 
@@ -13,7 +13,6 @@ int current_option_selected = 0;
 string MainMenu[NB_OPTIONS] = {
     "JOUER",
     "FULLSCREEN ON/OFF",
-    "TEST VIDEO",
     "QUITTER"
 };
 
@@ -48,9 +47,7 @@ void option_clicked(int current_option_selected){
         case 1: //fullscreen
             glutFullScreenToggle();
             break;
-        case 2: //test video
-            break;
-        case 3: //QUITTER
+        case 2: //Quitter
             exit(0);
             break;
     }
